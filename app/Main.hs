@@ -1,27 +1,33 @@
-import Control.Concurrent (threadDelay)
-import Control.Monad (forever)
-
 import Graphics.Gloss
-import Debug
+import Debug.Debug (debugPoint, debugGrid)
 
 data GameState = GameState
-  { objectLocation :: (Float, Float)
+  { angle :: Float
+  , radius :: Float
+  , xOrig :: Float
+  , yOrig :: Float
   }
 
 mkGameState :: GameState
 mkGameState = GameState
-  { objectLocation = (0, 0)
+  { angle = 0
+  , radius = 100
+  , xOrig = 0
+  , yOrig = 0
   }
 
 render :: GameState -> Picture
-render state = point x y
+render state = debugPoint (x + r * sin a) (y + r * cos a)
   where
-    (x, y) = objectLocation state
+    a = angle state
+    x = xOrig state
+    y = yOrig state
+    r = radius state
 
 update :: GameState -> GameState
-update state = state { objectLocation = (x + 1, y) }
+update state = state { angle = a + 3 * pi / 180 }
   where
-    (x, y) = objectLocation state
+    a = angle state
 
 windowSize :: (Int, Int)
 windowSize = (1920, 1080)
@@ -39,21 +45,13 @@ background = white
 drawing :: Picture
 drawing = translate 100 0 $ circle 80
 
--- Draw the text of the given coordinates at the location of the coordinates
-coordinate :: (Int, Int) -> Picture
-coordinate (x, y) = translate (fromIntegral x) (fromIntegral y) $ scale 0.5 0.5 $ text $ show (x, y)
-
--- main :: IO ()
--- main = do
---     putStrLn "Hello, Haskell!"
---     gameLoop $ putStrLn "Hello, game loop!"
-
 main :: IO ()
 main = play 
   window 
   background 
   60 
   mkGameState 
-  render 
+  -- render 
+  (\_ -> debugGrid)
   (\_ -> id) 
   (\_ -> update)
