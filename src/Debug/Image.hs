@@ -5,6 +5,7 @@ module Debug.Image
   ) where
 
 import Graphics.Gloss
+import Lib.GlossUtil (thickRectangleWire)
 
 debugPoint :: Float -> Float -> Picture
 debugPoint x y = translate x y $ color red $ circleSolid 5
@@ -23,6 +24,7 @@ bitmapSizeF :: BitmapData -> (Float, Float)
 bitmapSizeF bData = (fromIntegral w, fromIntegral h)
   where (w, h) = bitmapSize bData
 
-debugBoundingBox :: Picture -> ((Float, Float), (Float, Float))
-debugBoundingBox (Bitmap bData) = ((0, 0), bitmapSizeF bData)
+debugBoundingBox :: Picture -> Picture
+debugBoundingBox (Bitmap bData) = color red $ thickRectangleWire 2 w h
+  where (w, h) = bitmapSizeF bData
 debugBoundingBox _              = error "boundingBox: not a bitmap"

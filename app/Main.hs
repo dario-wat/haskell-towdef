@@ -2,6 +2,7 @@ import Lib.Window (windowSize, windowPosition)
 import Graphics.Gloss
 import Debug.Trace (traceShowId)
 import Lib.Image.Terraine (cropTile, readTerraineImage, bridge, terraineObjects, TerraineObjects (horizontalBridge, verticalBridge))
+import Debug.Image (debugBoundingBox)
 
 data GameState = GameState
   { angle :: Float
@@ -63,6 +64,6 @@ main = do
     60 
     mkGameState 
     -- render 
-    (\_ -> verticalBridge b)
+    (\_ -> pictures [pic, debugBoundingBox (pic)])
     (\_ -> id) 
     (\_ -> update)
