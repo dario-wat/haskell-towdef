@@ -1,5 +1,7 @@
+import Debug.Debug (debugPoint, debugGrid, debugPointWithCoords)
+import Config.Window (windowSize, windowPosition, windowTopLeft)
 import Graphics.Gloss
-import Debug.Debug (debugPoint, debugGrid)
+import Debug.Trace (traceShowId)
 
 data GameState = GameState
   { angle :: Float
@@ -29,21 +31,23 @@ update state = state { angle = a + 3 * pi / 180 }
   where
     a = angle state
 
-windowSize :: (Int, Int)
-windowSize = (1920, 1080)
-
-windowPosition :: (Int, Int)
-windowPosition = (0, 0)
-
 window :: Display
 window = InWindow "Nice Window" windowSize windowPosition
--- window = FullScreen
+-- window = FullScreen  -- needs special window sizing
 
 background :: Color
 background = white
 
 drawing :: Picture
 drawing = translate 100 0 $ circle 80
+
+points :: Picture
+points = pictures 
+  [ debugPointWithCoords 0 0
+  , debugPointWithCoords 100 100
+  , debugPointWithCoords 200 200
+  , uncurry debugPointWithCoords windowTopLeft
+  ]
 
 main :: IO ()
 main = play 

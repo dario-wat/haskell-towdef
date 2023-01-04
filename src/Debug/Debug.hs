@@ -4,6 +4,8 @@ module Debug.Debug
   , debugPointWithCoords
   ) where
 
+import Config.Const (cellSize)
+import Config.Window (windowBottomLeft, windowTopRight)
 import Graphics.Gloss
 
 debugPoint :: Float -> Float -> Picture
@@ -19,8 +21,11 @@ coordinate x y = translate (x + xOff) y $ textScale $ text coordText
 debugPointWithCoords :: Float -> Float -> Picture
 debugPointWithCoords x y = pictures [debugPoint x y, coordinate x y]
 
--- TODO
 debugGrid :: Picture
-debugGrid = line [(0, 100), (0, 200)]
+debugGrid = pictures $ map line $ verticalLines ++ horizontalLines
   where
-    size = 64
+    (startX, startY) = windowBottomLeft
+    (endX, endY) = windowTopRight
+    cellSizeF = fromIntegral cellSize
+    verticalLines   = map (\x -> [(x, startY), (x, endY)]) [startX, startX + cellSizeF .. endX]
+    horizontalLines = map (\y -> [(startX, y), (endX, y)]) [startY, startY + cellSizeF .. endY]

@@ -25,6 +25,8 @@ source-repository head
 
 library
   exposed-modules:
+      Config.Const
+      Config.Window
       Debug.Debug
       Lib
   other-modules:
