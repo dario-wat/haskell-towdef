@@ -27,17 +27,22 @@ library
   exposed-modules:
       Debug.Debug
       Lib.Grid
+      Lib.Image
       Lib.Window
+      ThirdParty.GraphicsGlossJuicy
   other-modules:
       Paths_haskell_towdef
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      apecs
+      JuicyPixels
+    , JuicyPixels-extra
+    , apecs
     , base >=4.7 && <5
     , gloss
     , linear
+    , vector
   default-language: Haskell2010
 
 executable haskell-towdef-exe
@@ -48,9 +53,12 @@ executable haskell-towdef-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      apecs
+      JuicyPixels
+    , JuicyPixels-extra
+    , apecs
     , base >=4.7 && <5
     , gloss
     , haskell-towdef
     , linear
+    , vector
   default-language: Haskell2010

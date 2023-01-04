@@ -2,6 +2,10 @@ import Debug.Debug (debugPoint, debugGrid, debugPointWithCoords)
 import Lib.Window (windowSize, windowPosition, windowTopLeft)
 import Graphics.Gloss
 import Debug.Trace (traceShowId)
+import Codec.Picture (readPng, convertRGB8)
+import Data.Either (fromRight)
+import Codec.Picture.Extra (crop)
+import ThirdParty.GraphicsGlossJuicy (fromImageRGB8)
 
 data GameState = GameState
   { angle :: Float
@@ -50,12 +54,18 @@ points = pictures
   ]
 
 main :: IO ()
-main = play 
-  window 
-  background 
-  60 
-  mkGameState 
-  -- render 
-  (\_ -> points)
-  (\_ -> id) 
-  (\_ -> update)
+main = do
+  im <- readPng "assets/Grass Tileset.png"
+  let 
+    im2 = fromRight (error "no image") im
+    im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
+    pic = fromImageRGB8 im3
+  play 
+    window 
+    background 
+    60 
+    mkGameState 
+    -- render 
+    (\_ -> pic)
+    (\_ -> id) 
+    (\_ -> update)
