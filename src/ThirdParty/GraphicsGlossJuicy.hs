@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module ThirdParty.GraphicsGlossJuicy
     (
     -- * Conversion from JuicyPixels' types to gloss' Picture

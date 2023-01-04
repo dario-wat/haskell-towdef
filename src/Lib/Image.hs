@@ -1,17 +1,10 @@
-module Lib.Image 
-  ( 
+module Lib.Image
+  ( readPngOrError
   ) where
 
-import Codec.Picture (readPng, DynamicImage)
-import Codec.Picture.Extra (crop)
-import Graphics.Gloss (Picture)
+import Codec.Picture (DynamicImage, readPng)
+import Data.Either (fromRight)
 
--- data Terraine = Terraine 
---   {
-
---   }
-
--- terrainImage :: IO Picture
--- terrainImage = crop 128 128 64 64 <$> image
---   where image = readPng "assets/Grass Tileset.png"
-
+readPngOrError :: FilePath -> IO DynamicImage
+readPngOrError filepath = fromRight (error errorText) <$> readPng filepath
+  where errorText = "no image: " <> filepath

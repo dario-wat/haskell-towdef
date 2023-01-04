@@ -25,9 +25,11 @@ source-repository head
 
 library
   exposed-modules:
-      Debug.Debug
+      Debug.Grid
+      Debug.Image
       Lib.Grid
       Lib.Image
+      Lib.Image.Terraine
       Lib.Window
       ThirdParty.GraphicsGlossJuicy
   other-modules:
