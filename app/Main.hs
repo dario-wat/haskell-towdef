@@ -1,5 +1,5 @@
 import Debug.Debug (debugPoint, debugGrid, debugPointWithCoords)
-import Config.Window (windowSize, windowPosition, windowTopLeft)
+import Lib.Window (windowSize, windowPosition, windowTopLeft)
 import Graphics.Gloss
 import Debug.Trace (traceShowId)
 
@@ -56,6 +56,6 @@ main = play
   60 
   mkGameState 
   -- render 
-  (\_ -> debugGrid)
+  (\_ -> points)
   (\_ -> id) 
   (\_ -> update)

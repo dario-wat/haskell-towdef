@@ -25,10 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Config.Const
-      Config.Window
       Debug.Debug
-      Lib
+      Lib.Grid
+      Lib.Window
   other-modules:
       Paths_haskell_towdef
   hs-source-dirs:

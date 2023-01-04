@@ -1,5 +1,7 @@
-module Config.Window
+module Lib.Window
   ( windowSize
+  , windowWidth
+  , windowHeight
   , windowPosition
   , windowTopLeft
   , windowTopRight
@@ -8,8 +10,14 @@ module Config.Window
   ) where
 
 windowSize :: (Int, Int)
--- windowSize = (1920, 1080)  -- only for fullscreen
 windowSize = (1440, 810)
+-- windowSize = (1920, 1080)  -- only for fullscreen
+
+windowWidth :: Int
+windowWidth = fst windowSize
+
+windowHeight :: Int
+windowHeight = snd windowSize
 
 windowPosition :: (Int, Int)
 windowPosition = (0, 0)
