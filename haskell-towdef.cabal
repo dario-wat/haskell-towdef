@@ -25,9 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Debug.Grid
-      Debug.Image
-      Debug.Terraine
+      Debug
       GameObjects.Sprite
       GameObjects.Terraine
       Lib.GlossUtil

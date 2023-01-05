@@ -2,8 +2,7 @@ import Lib.Window (windowSize, windowPosition)
 import Graphics.Gloss
 import Debug.Trace (traceShowId)
 import GameObjects.Terraine
-import Debug.Image (debugBoundingBox)
-import Debug.Terraine (debugTerraine)
+import Debug (debugSpritesheet, debugTerraine)
 
 data GameState = GameState
   { angle :: Float
@@ -56,6 +55,7 @@ main = do
   im <- readTerraineImage
   b <- terraineObjects
   dter <- debugTerraine
+  dss <- debugSpritesheet "assets/clampbeetle.png"
   let 
     pic = cropTile 5 1 im
     -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
@@ -66,6 +66,6 @@ main = do
     60 
     mkGameState 
     -- render 
-    (\_ -> dter)
+    (\_ -> dss)
     (\_ -> id) 
     (\_ -> update)
