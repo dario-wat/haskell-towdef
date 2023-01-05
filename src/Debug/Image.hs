@@ -24,6 +24,7 @@ bitmapSizeF :: BitmapData -> (Float, Float)
 bitmapSizeF bData = (fromIntegral w, fromIntegral h)
   where (w, h) = bitmapSize bData
 
+-- TODO ugly and not good
 debugBoundingBox :: Picture -> Picture
 debugBoundingBox (Bitmap bData) = color red $ thickRectangleWire 2 w h
   where (w, h) = bitmapSizeF bData

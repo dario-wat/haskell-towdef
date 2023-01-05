@@ -1,10 +1,14 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Lib.Image.Terraine
   ( cropTile
   , cropTiles
+  , drawTile
+  , mkDefaultTile
+  , mkTile
   , readTerraineImage
   , terraineObjects
+  , Tile(..)
   , TerraineObjects(..)
-  , bridge
   ) where
 
 import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
@@ -12,7 +16,22 @@ import Lib.Image (readPngOrError)
 
 import Codec.Picture (DynamicImage, convertRGBA8)
 import Codec.Picture.Extra (crop)
-import Graphics.Gloss (Picture)
+import Graphics.Gloss (Picture, translate)
+
+data Tile = Tile
+  { x :: Float
+  , y :: Float
+  , tile :: Picture
+  }
+
+drawTile :: Tile -> Picture
+drawTile (Tile x y tile) = translate x y tile
+
+mkTile :: Float -> Float -> Picture -> Tile
+mkTile x y tile = Tile {x, y, tile}
+
+mkDefaultTile :: Picture -> Tile
+mkDefaultTile = mkTile 0 0
 
 data TerraineObjects = TerraineObjects
   { horizontalBridge :: Picture
@@ -44,18 +63,5 @@ terraineObjects = do
   im <- readTerraineImage
   return $ TerraineObjects
     { horizontalBridge = cropTiles 7 13 3 2 im
-    , verticalBridge = cropTiles 10 12 2 3 im
+    , verticalBridge = cropTiles 10 12 3 3 im
     }
-
-bridge :: IO Picture
-bridge = cropTiles 11 10 2 3 <$> readTerraineImage
-
--- data Terraine = Terraine 
---   {
-
---   }
-
--- terrainImage :: IO Picture
--- terrainImage = crop 128 128 64 64 <$> image
---   where image = readPng "assets/Grass Tileset.png"
-

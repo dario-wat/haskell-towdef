@@ -27,6 +27,7 @@ library
   exposed-modules:
       Debug.Grid
       Debug.Image
+      Debug.Terraine
       Lib.GlossUtil
       Lib.Grid
       Lib.Image

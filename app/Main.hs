@@ -1,8 +1,9 @@
 import Lib.Window (windowSize, windowPosition)
 import Graphics.Gloss
 import Debug.Trace (traceShowId)
-import Lib.Image.Terraine (cropTile, readTerraineImage, bridge, terraineObjects, TerraineObjects (horizontalBridge, verticalBridge))
+import Lib.Image.Terraine
 import Debug.Image (debugBoundingBox)
+import Debug.Terraine (debugTerraine)
 
 data GameState = GameState
   { angle :: Float
@@ -54,6 +55,7 @@ main :: IO ()
 main = do
   im <- readTerraineImage
   b <- terraineObjects
+  dter <- debugTerraine
   let 
     pic = cropTile 5 1 im
     -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
@@ -64,6 +66,6 @@ main = do
     60 
     mkGameState 
     -- render 
-    (\_ -> pictures [pic, debugBoundingBox (pic)])
+    (\_ -> dter)
     (\_ -> id) 
     (\_ -> update)
