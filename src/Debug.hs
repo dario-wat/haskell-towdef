@@ -1,5 +1,7 @@
 module Debug 
   ( debugSpritesheet
+  , debugSpritesheetFrames
+  , debugSpritesheetFramesIndexed
   , debugTerraine
   , debugPoint
   , debugPointWithCoords
@@ -8,13 +10,14 @@ module Debug
 
 import qualified Graphics.Gloss as G
 import Lib.Image (readPngOrError)
-import Lib.Spritesheet (framesWithCoords)
 import GameObjects.Sprite (mkSprite, draw)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terraine as T
 import Lib.Window (windowBottomLeft, windowTopRight)
 import Lib.Grid (cellSize)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
+import Const (spriteWidth, spriteHeight)
+import Lib.Spritesheet (Frame, framesWithCoords, FrameIndex, framesIndexed)
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
 -- n is the thickness so we shouldn't use this with high numbers
@@ -59,15 +62,25 @@ debugPointWithCoords x y = G.pictures [debugPoint x y, coordinate x y]
 debugSpritesheet :: FilePath -> IO G.Picture
 debugSpritesheet imgPath = do
   img <- readPngOrError imgPath
-  let 
-    (w, h) = (64, 64)
-    (xOff, yOff) = (-600, -300)
+  let (w, h) = (spriteWidth, spriteHeight)
+  return $ debugSpritesheetFrames $ framesWithCoords w h img
+
+debugSpritesheetFramesIndexed :: FilePath -> [FrameIndex] -> IO G.Picture
+debugSpritesheetFramesIndexed imgPath coords = do
+  img <- readPngOrError imgPath
+  let (w, h) = (spriteWidth, spriteHeight)
+  return $ debugSpritesheetFrames $ zip coords $ framesIndexed w h coords img
+
+debugSpritesheetFrames :: [Frame] -> G.Picture
+debugSpritesheetFrames frames =
+  G.pictures $ map (\(i, pic) -> debugAndDrawSprite $ sprite i pic) frames
+  where 
+    (w, h) = (spriteWidth, spriteHeight)
+    (xOff, yOff) = (-600, 300)
     padding = 10
-    frames = framesWithCoords w h img
-    sprite r c = mkSprite 
+    sprite (r, c) = mkSprite 
       (fromIntegral $ c * (w + padding) + xOff) 
-      (fromIntegral $ r * (h + padding) + yOff)
-  return $ G.pictures $ map (\(pic, (r, c)) -> debugAndDrawSprite $ sprite r c pic) frames
+      (fromIntegral $ - r * (h + padding) + yOff)
 
 debugTerraine :: IO G.Picture
 debugTerraine = do

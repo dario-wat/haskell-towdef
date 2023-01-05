@@ -2,7 +2,8 @@ import Lib.Window (windowSize, windowPosition)
 import Graphics.Gloss
 import Debug.Trace (traceShowId)
 import GameObjects.Terraine
-import Debug (debugSpritesheet, debugTerraine)
+import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed)
+import Lib.Spritesheet (genRowIndices)
 
 data GameState = GameState
   { angle :: Float
@@ -56,6 +57,7 @@ main = do
   b <- terraineObjects
   dter <- debugTerraine
   dss <- debugSpritesheet "assets/clampbeetle.png"
+  d1 <- debugSpritesheetFramesIndexed "assets/clampbeetle.png" $ genRowIndices 1 0 8
   let 
     pic = cropTile 5 1 im
     -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
@@ -66,6 +68,6 @@ main = do
     60 
     mkGameState 
     -- render 
-    (\_ -> dss)
+    (\_ -> d1)
     (\_ -> id) 
     (\_ -> update)

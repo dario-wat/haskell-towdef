@@ -45,6 +45,7 @@ library
     , base >=4.7 && <5
     , gloss
     , linear
+    , unordered-containers
     , vector
   default-language: Haskell2010
 
@@ -62,5 +63,6 @@ executable haskell-towdef-exe
     , gloss
     , haskell-towdef
     , linear
+    , unordered-containers
     , vector
   default-language: Haskell2010
