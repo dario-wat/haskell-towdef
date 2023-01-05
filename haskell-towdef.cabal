@@ -29,10 +29,12 @@ library
       Debug
       GameObjects.Sprite
       GameObjects.Terraine
+      GameObjects.WalkingEnemy
       Lib.Grid
       Lib.Image
       Lib.Spritesheet
       Lib.Window
+      ThirdParty.GraphicsGlossGame
       ThirdParty.GraphicsGlossJuicy
   other-modules:
       Paths_haskell_towdef

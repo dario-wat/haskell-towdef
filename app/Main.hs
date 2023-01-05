@@ -4,6 +4,7 @@ import Debug.Trace (traceShowId)
 import GameObjects.Terraine
 import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed)
 import Lib.Spritesheet (genRowIndices)
+import ThirdParty.GraphicsGlossGame (playInScene, picturing)
 
 data GameState = GameState
   { angle :: Float
@@ -56,18 +57,18 @@ main = do
   im <- readTerraineImage
   b <- terraineObjects
   dter <- debugTerraine
-  dss <- debugSpritesheet "assets/clampbeetle.png"
-  d1 <- debugSpritesheetFramesIndexed "assets/clampbeetle.png" $ genRowIndices 1 0 8
+  dss <- debugSpritesheet 128 64 "assets/firebug.png"
+  d1 <- debugSpritesheetFramesIndexed 128 64 "assets/firebug.png" $ genRowIndices 1 0 8
   let 
     pic = cropTile 5 1 im
     -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
     -- pic = fromImageRGB8 im3
-  play 
+  playInScene
     window 
     background 
     60 
     mkGameState 
     -- render 
-    (\_ -> d1)
-    (\_ -> id) 
-    (\_ -> update)
+    (picturing (\_ -> d1))
+    (\_ _ -> id) 
+    [(\_ _ -> update)]

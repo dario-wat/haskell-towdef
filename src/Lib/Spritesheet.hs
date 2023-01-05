@@ -1,7 +1,7 @@
 {-# LANGUAGE TupleSections #-}
 module Lib.Spritesheet
   ( frames
-  , framesWithCoords
+  , framePictures
   , framesIndexed
   , genRowIndices
   , Frame
@@ -15,24 +15,32 @@ import qualified Data.HashMap.Strict as HM
 import Data.Maybe (mapMaybe)
 
 type FrameIndex = (Int, Int)
-type Frame = (FrameIndex, Picture)
+type FrameSize = (Int, Int)
+type Frame = (FrameIndex, Picture, FrameSize)
 
 -- w and h are width and height of a single frame
-framesWithCoords :: Int -> Int -> DynamicImage -> [Frame]
-framesWithCoords w h img = 
-  [((r, c), cropFrame r c w h img) | r <- [0..hFr-1], c <- [0..wFr-1]]
+frames :: Int -> Int -> DynamicImage -> [Frame]
+frames w h img = 
+  [((r, c), cropFrame r c w h img, (w, h)) | r <- [0..hFr-1], c <- [0..wFr-1]]
   where
     wFr = dynWidth img `div` w
     hFr = dynHeight img `div` h
 
-frames :: Int -> Int -> DynamicImage -> [Picture]
-frames w h = map snd . framesWithCoords w h
+framePictures :: Int -> Int -> DynamicImage -> [Picture]
+framePictures w h = map framePicture . frames w h
 
-framesIndexed :: Int -> Int -> [FrameIndex] -> DynamicImage -> [Picture]
-framesIndexed w h coords img = mapMaybe picFromMap coords
-  where
-    frameMap = HM.fromList $ framesWithCoords w h img
-    picFromMap c = frameMap HM.!? c
+framesIndexed :: Int -> Int -> DynamicImage -> [FrameIndex] -> [Frame]
+framesIndexed w h img = mapMaybe (frameMap HM.!?)
+  where frameMap = mapFromFrames $ frames w h img
 
 genRowIndices :: Int -> Int -> Int -> [FrameIndex]
 genRowIndices r c w = map (r,) [c..c+w]
+
+framePicture :: Frame -> Picture
+framePicture (_, pic, _) = pic
+
+frameKV :: Frame -> (FrameIndex, Frame)
+frameKV f@(i, _, _) = (i, f)
+
+mapFromFrames :: [Frame] -> HM.HashMap FrameIndex Frame
+mapFromFrames = HM.fromList . map frameKV

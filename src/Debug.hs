@@ -17,7 +17,7 @@ import Lib.Window (windowBottomLeft, windowTopRight)
 import Lib.Grid (cellSize)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Const (spriteWidth, spriteHeight)
-import Lib.Spritesheet (Frame, framesWithCoords, FrameIndex, framesIndexed)
+import Lib.Spritesheet (Frame, frames, FrameIndex, framesIndexed)
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
 -- n is the thickness so we shouldn't use this with high numbers
@@ -59,26 +59,23 @@ coordinate x y = G.translate (x + xOff) y $ textScale $ G.text coordText
 debugPointWithCoords :: Float -> Float -> G.Picture
 debugPointWithCoords x y = G.pictures [debugPoint x y, coordinate x y]
 
-debugSpritesheet :: FilePath -> IO G.Picture
-debugSpritesheet imgPath = do
+debugSpritesheet :: Int -> Int -> FilePath -> IO G.Picture
+debugSpritesheet w h imgPath = do
   img <- readPngOrError imgPath
-  let (w, h) = (spriteWidth, spriteHeight)
-  return $ debugSpritesheetFrames $ framesWithCoords w h img
+  return $ debugSpritesheetFrames $ frames w h img
 
-debugSpritesheetFramesIndexed :: FilePath -> [FrameIndex] -> IO G.Picture
-debugSpritesheetFramesIndexed imgPath coords = do
+debugSpritesheetFramesIndexed :: Int -> Int -> FilePath -> [FrameIndex] -> IO G.Picture
+debugSpritesheetFramesIndexed w h imgPath coords = do
   img <- readPngOrError imgPath
-  let (w, h) = (spriteWidth, spriteHeight)
-  return $ debugSpritesheetFrames $ zip coords $ framesIndexed w h coords img
+  return $ debugSpritesheetFrames $ framesIndexed w h img coords
 
 debugSpritesheetFrames :: [Frame] -> G.Picture
-debugSpritesheetFrames frames =
-  G.pictures $ map (\(i, pic) -> debugAndDrawSprite $ sprite i pic) frames
+debugSpritesheetFrames fs =
+  G.pictures $ map (\(i, pic, s) -> debugAndDrawSprite $ sprite i s pic) fs
   where 
-    (w, h) = (spriteWidth, spriteHeight)
     (xOff, yOff) = (-600, 300)
     padding = 10
-    sprite (r, c) = mkSprite 
+    sprite (r, c) (w, h) = mkSprite 
       (fromIntegral $ c * (w + padding) + xOff) 
       (fromIntegral $ - r * (h + padding) + yOff)
 
