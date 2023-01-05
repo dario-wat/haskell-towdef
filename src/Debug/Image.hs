@@ -24,6 +24,7 @@ bitmapSizeF :: BitmapData -> (Float, Float)
 bitmapSizeF bData = (fromIntegral w, fromIntegral h)
   where (w, h) = bitmapSize bData
 
+-- TODO this should maybe be done on the tile/sprite instead of the bitmap
 debugBoundingBox :: Picture -> Picture
 debugBoundingBox (Bitmap bData) = color red $ thickRectangleWire 2 w h
   where (w, h) = bitmapSizeF bData

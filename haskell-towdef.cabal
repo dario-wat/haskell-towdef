@@ -28,10 +28,10 @@ library
       Debug.Grid
       Debug.Image
       Debug.Terraine
+      GameObjects.Terraine
       Lib.GlossUtil
       Lib.Grid
       Lib.Image
-      Lib.Image.Terraine
       Lib.Window
       ThirdParty.GraphicsGlossJuicy
   other-modules:

@@ -1,5 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
-module Lib.Image.Terraine
+module GameObjects.Terraine
   ( cropTile
   , cropTiles
   , drawTile

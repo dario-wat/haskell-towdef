@@ -3,7 +3,7 @@ module Debug.Terraine
   ) where
 
 import Graphics.Gloss (Picture, pictures, translate)
-import Lib.Image.Terraine
+import GameObjects.Terraine
 import Debug.Image (debugBoundingBox)
 
 debugTileBoundingBox :: Tile -> Picture

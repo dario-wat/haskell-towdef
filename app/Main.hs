@@ -1,7 +1,7 @@
 import Lib.Window (windowSize, windowPosition)
 import Graphics.Gloss
 import Debug.Trace (traceShowId)
-import Lib.Image.Terraine
+import GameObjects.Terraine
 import Debug.Image (debugBoundingBox)
 import Debug.Terraine (debugTerraine)
 
