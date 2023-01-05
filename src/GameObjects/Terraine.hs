@@ -13,28 +13,26 @@ import Lib.Image (readPngOrError)
 import Codec.Picture (DynamicImage, convertRGBA8)
 import Codec.Picture.Extra (crop)
 import Graphics.Gloss (Picture)
+import Const (spriteWidth, spriteHeight)
 
 tileWidth :: Int
-tileWidth = 64
+tileWidth = spriteWidth
 
 tileHeight :: Int
-tileHeight = 64
+tileHeight = spriteHeight
 
 readTerraineImage :: IO DynamicImage
 readTerraineImage = readPngOrError "assets/grass_tileset.png"
 
--- TODO use crop frame here
-
--- x and y are the coordinates of the tile in the tileset
+-- r and c are the coordinates of the tile in the tileset
 cropTile :: Int -> Int -> DynamicImage -> Picture
-cropTile x y = fromImageRGBA8 . cropFn . convertRGBA8
-  where cropFn = crop (x * tileWidth) (y * tileHeight) tileWidth tileHeight
+cropTile r c = cropTiles r c 1 1
 
--- x and y are the coordinates of the tile in the tileset
+-- r and c are the coordinates of the tile in the tileset
 -- w and h are the number of tiles representing width and height
 cropTiles :: Int -> Int -> Int -> Int -> DynamicImage -> Picture
-cropTiles x y w h = fromImageRGBA8 . cropFn . convertRGBA8
-  where cropFn = crop (x * tileWidth) (y * tileHeight) (w * tileWidth) (h * tileHeight)
+cropTiles r c w h = fromImageRGBA8 . cropFn . convertRGBA8
+  where cropFn = crop (c * tileWidth) (r * tileHeight) (w * tileWidth) (h * tileHeight)
 
 data TerraineObjects = TerraineObjects
   { horizontalBridge :: Picture
@@ -67,30 +65,30 @@ terraineObjects :: IO TerraineObjects
 terraineObjects = do
   im <- readTerraineImage
   return $ TerraineObjects
-    { horizontalBridge    = cropTiles 7 13 3 2 im
-    , verticalBridge      = cropTiles 10 12 3 3 im
-    , greenTree1          = cropTile 13 6 im
-    , greenTree2          = cropTile 14 6 im
-    , greenTree3          = cropTile 13 7 im
-    , greenTree4          = cropTile 14 7 im
-    , brownTree1          = cropTile 13 9 im
-    , brownTree2          = cropTile 14 9 im
-    , brownTree3          = cropTile 13 10 im
-    , brownTree4          = cropTile 14 10 im
-    , rock1               = cropTile 13 12 im
-    , rock2               = cropTile 14 12 im
-    , rock3               = cropTile 13 13 im
-    , rock4               = cropTile 14 13 im
-    , bush1               = cropTile 11 9 im
-    , bush2               = cropTile 12 9 im
-    , rockWallDown        = cropTiles 8 9 3 1 im
-    , rockWallUp          = cropTiles 8 10 3 1 im
-    , rockWallLeft        = cropTiles 6 10 1 3 im
-    , rockWallRight       = cropTiles 7 10 1 3 im
-    , rockWallTopLeft     = cropTile 8 11 im
-    , rockWallTopRight    = cropTile 9 11 im
-    , rockWallBottomLeft  = cropTile 8 12 im
-    , rockWallBottomRight = cropTile 9 11 im
+    { horizontalBridge    = cropTiles 13  7 3 2 im
+    , verticalBridge      = cropTiles 12 10 3 3 im
+    , greenTree1          = cropTile   6 13 im
+    , greenTree2          = cropTile   6 14 im
+    , greenTree3          = cropTile   7 13 im
+    , greenTree4          = cropTile   7 14 im
+    , brownTree1          = cropTile   9 13 im
+    , brownTree2          = cropTile   9 14 im
+    , brownTree3          = cropTile  10 13 im
+    , brownTree4          = cropTile  10 14 im
+    , rock1               = cropTile  12 13 im
+    , rock2               = cropTile  12 14 im
+    , rock3               = cropTile  13 13 im
+    , rock4               = cropTile  13 14 im
+    , bush1               = cropTile   9 11 im
+    , bush2               = cropTile   9 12 im
+    , rockWallDown        = cropTiles  9  8  3 1 im
+    , rockWallUp          = cropTiles 10  8  3 1 im
+    , rockWallLeft        = cropTiles 10  6  1 3 im
+    , rockWallRight       = cropTiles 10  7  1 3 im
+    , rockWallTopLeft     = cropTile  11  8 im
+    , rockWallTopRight    = cropTile  11  9 im
+    , rockWallBottomLeft  = cropTile  12  8 im
+    , rockWallBottomRight = cropTile  11  9 im
     }
 
 data TerraineTiles = TerraineTiles
@@ -111,15 +109,15 @@ terraineTiles :: IO TerraineTiles
 terraineTiles = do
   im <- readTerraineImage
   return $ TerraineTiles
-    { roadCrossing         = cropTiles 1 6 3 3 im
-    , roadTopLeft          = cropTiles 11 1 2 2 im
-    , roadTopRight         = cropTiles 13 1 2 2 im
-    , roadBottomLeft       = cropTiles 11 3 2 2 im
-    , roadBottomRight      = cropTiles 13 3 2 2 im
-    , roadStrip            = cropTiles 9 1 1 3 im
-    , roadTopLeftSharp     = cropTiles 5 1 2 2 im
-    , roadTopRightSharp    = cropTiles 6 1 2 2 im
-    , roadBottomLeftSharp  = cropTiles 5 2 2 2 im
-    , roadBottomRightSharp = cropTiles 6 2 2 2 im
-    , grass                = cropTile 2 1 im
+    { roadCrossing         = cropTiles 6  1 3 3 im
+    , roadTopLeft          = cropTiles 1 11 2 2 im
+    , roadTopRight         = cropTiles 1 13 2 2 im
+    , roadBottomLeft       = cropTiles 3 11 2 2 im
+    , roadBottomRight      = cropTiles 3 13 2 2 im
+    , roadStrip            = cropTiles 1  9 1 3 im
+    , roadTopLeftSharp     = cropTiles 1  5 2 2 im
+    , roadTopRightSharp    = cropTiles 1  6 2 2 im
+    , roadBottomLeftSharp  = cropTiles 2  5 2 2 im
+    , roadBottomRightSharp = cropTiles 2  6 2 2 im
+    , grass                = cropTile  1  2 im
     }
