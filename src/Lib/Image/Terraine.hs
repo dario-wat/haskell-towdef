@@ -36,6 +36,18 @@ mkDefaultTile = mkTile 0 0
 data TerraineObjects = TerraineObjects
   { horizontalBridge :: Picture
   , verticalBridge :: Picture
+  , greenTree1 :: Picture
+  , greenTree2 :: Picture
+  , greenTree3 :: Picture
+  , greenTree4 :: Picture
+  , brownTree1 :: Picture
+  , brownTree2 :: Picture
+  , brownTree3 :: Picture
+  , brownTree4 :: Picture
+  , rock1 :: Picture
+  , rock2 :: Picture
+  , rock3 :: Picture
+  , rock4 :: Picture
   }
 
 tileWidth :: Int
@@ -63,5 +75,17 @@ terraineObjects = do
   im <- readTerraineImage
   return $ TerraineObjects
     { horizontalBridge = cropTiles 7 13 3 2 im
-    , verticalBridge = cropTiles 10 12 3 3 im
+    , verticalBridge   = cropTiles 10 12 3 3 im
+    , greenTree1       = cropTile 13 6 im
+    , greenTree2       = cropTile 14 6 im
+    , greenTree3       = cropTile 13 7 im
+    , greenTree4       = cropTile 14 7 im
+    , brownTree1       = cropTile 13 9 im
+    , brownTree2       = cropTile 14 9 im
+    , brownTree3       = cropTile 13 10 im
+    , brownTree4       = cropTile 14 10 im
+    , rock1            = cropTile 13 12 im
+    , rock2            = cropTile 14 12 im
+    , rock3            = cropTile 13 13 im
+    , rock4            = cropTile 14 13 im
     }
