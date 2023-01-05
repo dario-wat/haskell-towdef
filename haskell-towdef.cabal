@@ -28,6 +28,7 @@ library
       Debug.Grid
       Debug.Image
       Debug.Terraine
+      GameObjects.Sprite
       GameObjects.Terraine
       Lib.GlossUtil
       Lib.Grid

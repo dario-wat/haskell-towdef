@@ -2,36 +2,16 @@
 module GameObjects.Terraine
   ( cropTile
   , cropTiles
-  , drawTile
-  , mkDefaultTile
-  , mkTile
   , readTerraineImage
   , terraineObjects
-  , Tile(..)
   , TerraineObjects(..)
   ) where
 
 import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
 import Lib.Image (readPngOrError)
-
 import Codec.Picture (DynamicImage, convertRGBA8)
 import Codec.Picture.Extra (crop)
-import Graphics.Gloss (Picture, translate)
-
-data Tile = Tile
-  { x :: Float
-  , y :: Float
-  , tile :: Picture
-  }
-
-drawTile :: Tile -> Picture
-drawTile (Tile x y tile) = translate x y tile
-
-mkTile :: Float -> Float -> Picture -> Tile
-mkTile x y tile = Tile {x, y, tile}
-
-mkDefaultTile :: Picture -> Tile
-mkDefaultTile = mkTile 0 0
+import Graphics.Gloss (Picture)
 
 data TerraineObjects = TerraineObjects
   { horizontalBridge :: Picture
