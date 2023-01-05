@@ -12,15 +12,25 @@ import Lib.Spritesheet (framesWithCoords)
 import GameObjects.Sprite (mkSprite, draw)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terraine as T
-import Lib.GlossUtil (thickRectangleWire)
 import Lib.Window (windowBottomLeft, windowTopRight)
 import Lib.Grid (cellSize)
+import Graphics.Gloss (Picture, pictures, rectangleWire)
+
+-- Draw a rectangle with a border of given thickness. Complexity is O(n) where
+-- n is the thickness so we shouldn't use this with high numbers
+thickRectangleWire :: Float -> Float -> Float -> Picture
+thickRectangleWire thickness w h = 
+  pictures $ map rectangleWithThickness $ filter isValidThickness [minTh..maxTh]
+  where 
+    floorF = fromIntegral . (floor :: Float -> Int)
+    (minTh, maxTh) = (floorF $ -thickness / 2, floorF thickness / 2)
+    isValidThickness t = w + t >= 0 && h + t >= 0
+    rectangleWithThickness t = rectangleWire (w + t) (h + t)
 
 bitmapSizeF :: G.BitmapData -> (Float, Float)
 bitmapSizeF bData = (fromIntegral w, fromIntegral h)
   where (w, h) = G.bitmapSize bData
 
--- TODO this should maybe be done on the tile/sprite instead of the bitmap
 -- NOTE works only on bitmaps
 debugBoundingBox :: G.Picture -> G.Picture
 debugBoundingBox (G.Bitmap bData) = G.color G.red $ thickRectangleWire 2 w h

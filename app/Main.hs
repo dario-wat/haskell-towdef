@@ -66,6 +66,6 @@ main = do
     60 
     mkGameState 
     -- render 
-    (\_ -> dter)
+    (\_ -> dss)
     (\_ -> id) 
     (\_ -> update)

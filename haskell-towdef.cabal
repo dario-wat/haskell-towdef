@@ -25,10 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      Const
       Debug
       GameObjects.Sprite
       GameObjects.Terraine
-      Lib.GlossUtil
       Lib.Grid
       Lib.Image
       Lib.Spritesheet
