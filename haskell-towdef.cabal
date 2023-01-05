@@ -33,6 +33,7 @@ library
       Lib.GlossUtil
       Lib.Grid
       Lib.Image
+      Lib.Spritesheet
       Lib.Window
       ThirdParty.GraphicsGlossJuicy
   other-modules:
@@ -43,7 +44,6 @@ library
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
-    , apecs
     , base >=4.7 && <5
     , gloss
     , linear
@@ -60,7 +60,6 @@ executable haskell-towdef-exe
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
-    , apecs
     , base >=4.7 && <5
     , gloss
     , haskell-towdef

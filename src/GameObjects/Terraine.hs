@@ -23,6 +23,8 @@ tileHeight = 64
 readTerraineImage :: IO DynamicImage
 readTerraineImage = readPngOrError "assets/grass_tileset.png"
 
+-- TODO use crop frame here
+
 -- x and y are the coordinates of the tile in the tileset
 cropTile :: Int -> Int -> DynamicImage -> Picture
 cropTile x y = fromImageRGBA8 . cropFn . convertRGBA8
@@ -102,6 +104,7 @@ data TerraineTiles = TerraineTiles
   , roadTopRightSharp :: Picture
   , roadBottomLeftSharp :: Picture
   , roadBottomRightSharp :: Picture
+  , grass :: Picture
   }
 
 terraineTiles :: IO TerraineTiles
@@ -118,4 +121,5 @@ terraineTiles = do
     , roadTopRightSharp    = cropTiles 6 1 2 2 im
     , roadBottomLeftSharp  = cropTiles 5 2 2 2 im
     , roadBottomRightSharp = cropTiles 6 2 2 2 im
+    , grass                = cropTile 2 1 im
     }

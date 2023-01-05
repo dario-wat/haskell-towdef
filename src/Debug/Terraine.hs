@@ -51,5 +51,6 @@ debugTerraine = do
     , mkSprite  (-20)  (-40) $ roadTopRightSharp tTil
     , mkSprite  (-20) (-180) $ roadBottomLeftSharp tTil
     , mkSprite  (-20) (-320) $ roadBottomRightSharp tTil
+    , mkSprite    150    300 $ grass tTil
     ]
   where debugAndDrawTile = pictures . sequence [debugTileBoundingBox, draw]
