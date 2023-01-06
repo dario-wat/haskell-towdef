@@ -1,12 +1,16 @@
 module Lib.Animation
-  (
-
+  ( repeatingAnimation
+  , AnimationBuilder
   ) where
 
-import ThirdParty.GraphicsGlossGame (Animation)
+import ThirdParty.GraphicsGlossGame (Animation, animationPicture)
+import Data.Maybe (isNothing)
 
--- animationDelay :: Animation -> Float
--- animationDelay (Animation _ delay _) = delay
+-- Animation can only be created given the start time
+type AnimationBuilder = Float -> Animation
 
--- repeatingAnimation :: Animation -> Float -> Animation
--- repeatingAnimation anim now = if isNothing $ animationPicture (anim world) now then an now  else anim world
+repeatingAnimation :: Animation -> AnimationBuilder -> Float -> Animation
+repeatingAnimation currAnim newAnim t 
+  | isAnimationFinished currAnim t = newAnim t  
+  | otherwise                      = currAnim
+  where isAnimationFinished anim = isNothing . animationPicture anim

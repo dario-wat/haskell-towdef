@@ -4,10 +4,11 @@ import Debug.Trace (traceShowId, traceShow)
 import GameObjects.Terraine
 import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed)
 import Lib.Spritesheet (genRowIndices, framePictures, framesIndexed, animFrames)
-import ThirdParty.GraphicsGlossGame (playInScene, picturing, animating, Animation, noAnimation, animation, animationPicture)
-import GameObjects.WalkingEnemy (FirebugAnimations(walkDown), firebugAnimations)
+import ThirdParty.GraphicsGlossGame (playInScene, picturing, animating, Animation, noAnimation, animation, animationPicture, translating)
+import GameObjects.WalkingEnemy (FirebugAnimations(walkDown, walkLeft), firebugAnimations)
 import Lib.Image (readPngOrError)
 import Data.Maybe (isNothing)
+import Lib.Animation (repeatingAnimation)
 
 data GameState = GameState
   { anim :: Animation
@@ -38,9 +39,8 @@ main = do
   fba <- firebugAnimations
   fb <- readPngOrError "assets/firebug.png"
   let 
-    an = animation (animFrames (128, 64) (3, 0, 8) fb) 0.1
     applyBs now _ world = 
-      world { anim = if isNothing $ animationPicture (anim world) now then an $ traceShowId now  else anim world}
+      world { anim = repeatingAnimation (anim world) (walkLeft fba) now}
     pic = cropTile 5 1 im
     -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
     -- pic = fromImageRGB8 im3
@@ -50,7 +50,7 @@ main = do
     60
     mkGameState 
     -- render 
-    (animating anim blank)
+    (translating (\_ -> (-100, 100)) $ animating anim blank)
     -- (picturing (\_ -> d1))
     (\_ _ -> id) 
     [applyBs]
