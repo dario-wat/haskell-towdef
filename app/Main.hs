@@ -1,38 +1,22 @@
 import Lib.Window (windowSize, windowPosition)
 import Graphics.Gloss
-import Debug.Trace (traceShowId)
+import Debug.Trace (traceShowId, traceShow)
 import GameObjects.Terraine
 import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed)
-import Lib.Spritesheet (genRowIndices)
-import ThirdParty.GraphicsGlossGame (playInScene, picturing)
+import Lib.Spritesheet (genRowIndices, framePictures, framesIndexed, animFrames)
+import ThirdParty.GraphicsGlossGame (playInScene, picturing, animating, Animation, noAnimation, animation, animationPicture)
+import GameObjects.WalkingEnemy (FirebugAnimations(walkDown), firebugAnimations)
+import Lib.Image (readPngOrError)
+import Data.Maybe (isNothing)
 
 data GameState = GameState
-  { angle :: Float
-  , radius :: Float
-  , xOrig :: Float
-  , yOrig :: Float
+  { anim :: Animation
   }
 
 mkGameState :: GameState
 mkGameState = GameState
-  { angle = 0
-  , radius = 100
-  , xOrig = 0
-  , yOrig = 0
+  { anim = noAnimation
   }
-
--- render :: GameState -> Picture
--- render state = debugPoint (x + r * sin a) (y + r * cos a)
---   where
---     a = angle state
---     x = xOrig state
---     y = yOrig state
---     r = radius state
-
-update :: GameState -> GameState
-update state = state { angle = a + 3 * pi / 180 }
-  where
-    a = angle state
 
 window :: Display
 window = InWindow "Nice Window" windowSize windowPosition
@@ -41,16 +25,8 @@ window = InWindow "Nice Window" windowSize windowPosition
 background :: Color
 background = white
 
--- drawing :: Picture
--- drawing = translate 100 0 $ circle 80
-
--- points :: Picture
--- points = pictures 
---   [ debugPointWithCoords 0 0
---   , debugPointWithCoords 100 100
---   , debugPointWithCoords 200 200
---   , uncurry debugPointWithCoords windowTopLeft
---   ]
+-- applyBs :: Float -> Float -> GameState -> GameState
+-- applyBs now _ world = world { anim = noAnimation }
 
 main :: IO ()
 main = do
@@ -58,17 +34,23 @@ main = do
   b <- terraineObjects
   dter <- debugTerraine
   dss <- debugSpritesheet 128 64 "assets/firebug.png"
-  d1 <- debugSpritesheetFramesIndexed 128 64 "assets/firebug.png" $ genRowIndices 1 0 8
+  d1 <- debugSpritesheetFramesIndexed 128 64 "assets/firebug.png" $ traceShowId $ genRowIndices 3 0 8
+  fba <- firebugAnimations
+  fb <- readPngOrError "assets/firebug.png"
   let 
+    an = animation (animFrames (128, 64) (3, 0, 8) fb) 0.1
+    applyBs now _ world = 
+      world { anim = if isNothing $ animationPicture (anim world) now then an $ traceShowId now  else anim world}
     pic = cropTile 5 1 im
     -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
     -- pic = fromImageRGB8 im3
   playInScene
     window 
     background 
-    60 
+    60
     mkGameState 
     -- render 
-    (picturing (\_ -> d1))
+    (animating anim blank)
+    -- (picturing (\_ -> d1))
     (\_ _ -> id) 
-    [(\_ _ -> update)]
+    [applyBs]

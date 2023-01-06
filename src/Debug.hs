@@ -16,8 +16,7 @@ import qualified GameObjects.Terraine as T
 import Lib.Window (windowBottomLeft, windowTopRight)
 import Lib.Grid (cellSize)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
-import Const (spriteWidth, spriteHeight)
-import Lib.Spritesheet (Frame, frames, FrameIndex, framesIndexed)
+import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
 -- n is the thickness so we shouldn't use this with high numbers
@@ -62,7 +61,7 @@ debugPointWithCoords x y = G.pictures [debugPoint x y, coordinate x y]
 debugSpritesheet :: Int -> Int -> FilePath -> IO G.Picture
 debugSpritesheet w h imgPath = do
   img <- readPngOrError imgPath
-  return $ debugSpritesheetFrames $ frames w h img
+  return $ debugSpritesheetFrames $ allFrames w h img
 
 debugSpritesheetFramesIndexed :: Int -> Int -> FilePath -> [FrameIndex] -> IO G.Picture
 debugSpritesheetFramesIndexed w h imgPath coords = do

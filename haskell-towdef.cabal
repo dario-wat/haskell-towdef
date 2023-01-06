@@ -30,6 +30,7 @@ library
       GameObjects.Sprite
       GameObjects.Terraine
       GameObjects.WalkingEnemy
+      Lib.Animation
       Lib.Grid
       Lib.Image
       Lib.Spritesheet

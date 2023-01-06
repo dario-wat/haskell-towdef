@@ -1,9 +1,10 @@
 {-# LANGUAGE TupleSections #-}
 module Lib.Spritesheet
-  ( frames
+  ( allFrames
   , framePictures
   , framesIndexed
   , genRowIndices
+  , animFrames
   , Frame
   , FrameIndex
   ) where
@@ -17,30 +18,32 @@ import Data.Maybe (mapMaybe)
 type FrameIndex = (Int, Int)
 type FrameSize = (Int, Int)
 type Frame = (FrameIndex, Picture, FrameSize)
+type RowIndexConfig = (Int, Int, Int)   -- (row index, col index, frame count)
 
 -- w and h are width and height of a single frame
-frames :: Int -> Int -> DynamicImage -> [Frame]
-frames w h img = 
+allFrames :: Int -> Int -> DynamicImage -> [Frame]
+allFrames w h img = 
   [((r, c), cropFrame r c w h img, (w, h)) | r <- [0..hFr-1], c <- [0..wFr-1]]
   where
     wFr = dynWidth img `div` w
     hFr = dynHeight img `div` h
 
-framePictures :: Int -> Int -> DynamicImage -> [Picture]
-framePictures w h = map framePicture . frames w h
-
 framesIndexed :: Int -> Int -> DynamicImage -> [FrameIndex] -> [Frame]
 framesIndexed w h img = mapMaybe (frameMap HM.!?)
-  where frameMap = mapFromFrames $ frames w h img
+  where 
+    frameKV f@(i, _, _) = (i, f)
+    mapFromFrames = HM.fromList . map frameKV
+    frameMap = mapFromFrames $ allFrames w h img
 
 genRowIndices :: Int -> Int -> Int -> [FrameIndex]
-genRowIndices r c w = map (r,) [c..c+w]
+genRowIndices r c cnt = map (r,) [c..c+cnt-1]
 
-framePicture :: Frame -> Picture
-framePicture (_, pic, _) = pic
+framePictures :: [Frame] -> [Picture]
+framePictures = map framePicture
+  where framePicture (_, pic, _) = pic
 
-frameKV :: Frame -> (FrameIndex, Frame)
-frameKV f@(i, _, _) = (i, f)
-
-mapFromFrames :: [Frame] -> HM.HashMap FrameIndex Frame
-mapFromFrames = HM.fromList . map frameKV
+-- | Generate a list of pictures from a spritesheet given the frame size
+-- and the row configuration (row index, column index, number of frames)
+animFrames :: FrameSize -> RowIndexConfig -> DynamicImage -> [Picture]
+animFrames (w, h) (r, c, cnt) img = 
+  framePictures $ framesIndexed w h img $ genRowIndices r c cnt
