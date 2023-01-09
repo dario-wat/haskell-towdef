@@ -10,7 +10,7 @@ module Debug
 
 import qualified Graphics.Gloss as G
 import Lib.Image (readPngOrError)
-import GameObjects.Sprite (mkSprite, draw)
+import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terraine as T
 import Lib.Window (windowBottomLeft, windowTopRight)
@@ -40,7 +40,7 @@ debugBoundingBox (G.Bitmap bData) = G.color G.red $ thickRectangleWire 2 w h
 debugBoundingBox _              = error "boundingBox: not a bitmap"
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
-debugSpriteBoundingBox (S.Sprite x y tile) = G.translate x y $ debugBoundingBox tile
+debugSpriteBoundingBox (S.Sprite x y tile _) = G.translate x y $ debugBoundingBox tile
 
 debugAndDrawSprite :: S.Sprite -> G.Picture
 debugAndDrawSprite = G.pictures . sequence [debugSpriteBoundingBox, draw]
@@ -74,7 +74,7 @@ debugSpritesheetFrames fs =
   where 
     (xOff, yOff) = (-600, 300)
     padding = 10
-    sprite (r, c) (w, h) = mkSprite 
+    sprite (r, c) (w, h) = mkStaticSprite 
       (fromIntegral $ c * (w + padding) + xOff) 
       (fromIntegral $ - r * (h + padding) + yOff)
 
@@ -83,41 +83,41 @@ debugTerraine = do
   tObj <- T.terraineObjects
   tTil <- T.terraineTiles
   return $ G.pictures $ map debugAndDrawSprite
-    [ mkSprite (-600)    300 $ T.horizontalBridge tObj
-    , mkSprite (-600)    100 $ T.verticalBridge tObj
-    , mkSprite (-650)  (-50) $ T.greenTree1 tObj
-    , mkSprite (-650) (-130) $ T.greenTree2 tObj
-    , mkSprite (-650) (-210) $ T.greenTree3 tObj
-    , mkSprite (-650) (-290) $ T.greenTree4 tObj
-    , mkSprite (-570)  (-50) $ T.brownTree1 tObj
-    , mkSprite (-570) (-130) $ T.brownTree2 tObj
-    , mkSprite (-570) (-210) $ T.brownTree3 tObj
-    , mkSprite (-570) (-290) $ T.brownTree4 tObj
-    , mkSprite (-490)  (-50) $ T.rock1 tObj
-    , mkSprite (-490) (-130) $ T.rock2 tObj
-    , mkSprite (-490) (-210) $ T.rock3 tObj
-    , mkSprite (-490) (-290) $ T.rock4 tObj
-    , mkSprite (-650) (-370) $ T.bush1 tObj
-    , mkSprite (-570) (-370) $ T.bush2 tObj
-    , mkSprite (-380)    350 $ T.rockWallDown tObj
-    , mkSprite (-380)    270 $ T.rockWallUp tObj
-    , mkSprite (-440)    100 $ T.rockWallLeft tObj
-    , mkSprite (-360)    100 $ T.rockWallRight tObj
-    , mkSprite (-410)  (-50) $ T.rockWallTopLeft tObj
-    , mkSprite (-410) (-130) $ T.rockWallTopRight tObj
-    , mkSprite (-410) (-210) $ T.rockWallBottomLeft tObj
-    , mkSprite (-410) (-290) $ T.rockWallBottomRight tObj
-    , mkSprite (-150)    300 $ T.roadCrossing tTil
-    , mkSprite (-230)    100 $ T.roadTopLeft tTil
-    , mkSprite (-230)  (-40) $ T.roadTopRight tTil
-    , mkSprite (-230) (-180) $ T.roadBottomLeft tTil
-    , mkSprite (-230) (-320) $ T.roadBottomRight tTil
-    , mkSprite     20    300 $ T.roadStrip tTil
-    , mkSprite  (-20)    100 $ T.roadTopLeftSharp tTil
-    , mkSprite  (-20)  (-40) $ T.roadTopRightSharp tTil
-    , mkSprite  (-20) (-180) $ T.roadBottomLeftSharp tTil
-    , mkSprite  (-20) (-320) $ T.roadBottomRightSharp tTil
-    , mkSprite    150    300 $ T.grass tTil
+    [ mkStaticSprite (-600)    300 $ T.horizontalBridge tObj
+    , mkStaticSprite (-600)    100 $ T.verticalBridge tObj
+    , mkStaticSprite (-650)  (-50) $ T.greenTree1 tObj
+    , mkStaticSprite (-650) (-130) $ T.greenTree2 tObj
+    , mkStaticSprite (-650) (-210) $ T.greenTree3 tObj
+    , mkStaticSprite (-650) (-290) $ T.greenTree4 tObj
+    , mkStaticSprite (-570)  (-50) $ T.brownTree1 tObj
+    , mkStaticSprite (-570) (-130) $ T.brownTree2 tObj
+    , mkStaticSprite (-570) (-210) $ T.brownTree3 tObj
+    , mkStaticSprite (-570) (-290) $ T.brownTree4 tObj
+    , mkStaticSprite (-490)  (-50) $ T.rock1 tObj
+    , mkStaticSprite (-490) (-130) $ T.rock2 tObj
+    , mkStaticSprite (-490) (-210) $ T.rock3 tObj
+    , mkStaticSprite (-490) (-290) $ T.rock4 tObj
+    , mkStaticSprite (-650) (-370) $ T.bush1 tObj
+    , mkStaticSprite (-570) (-370) $ T.bush2 tObj
+    , mkStaticSprite (-380)    350 $ T.rockWallDown tObj
+    , mkStaticSprite (-380)    270 $ T.rockWallUp tObj
+    , mkStaticSprite (-440)    100 $ T.rockWallLeft tObj
+    , mkStaticSprite (-360)    100 $ T.rockWallRight tObj
+    , mkStaticSprite (-410)  (-50) $ T.rockWallTopLeft tObj
+    , mkStaticSprite (-410) (-130) $ T.rockWallTopRight tObj
+    , mkStaticSprite (-410) (-210) $ T.rockWallBottomLeft tObj
+    , mkStaticSprite (-410) (-290) $ T.rockWallBottomRight tObj
+    , mkStaticSprite (-150)    300 $ T.roadCrossing tTil
+    , mkStaticSprite (-230)    100 $ T.roadTopLeft tTil
+    , mkStaticSprite (-230)  (-40) $ T.roadTopRight tTil
+    , mkStaticSprite (-230) (-180) $ T.roadBottomLeft tTil
+    , mkStaticSprite (-230) (-320) $ T.roadBottomRight tTil
+    , mkStaticSprite     20    300 $ T.roadStrip tTil
+    , mkStaticSprite  (-20)    100 $ T.roadTopLeftSharp tTil
+    , mkStaticSprite  (-20)  (-40) $ T.roadTopRightSharp tTil
+    , mkStaticSprite  (-20) (-180) $ T.roadBottomLeftSharp tTil
+    , mkStaticSprite  (-20) (-320) $ T.roadBottomRightSharp tTil
+    , mkStaticSprite    150    300 $ T.grass tTil
     ]
 
 -- TODO right now it draws the entire window, but it should be bounded

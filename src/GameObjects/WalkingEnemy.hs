@@ -4,7 +4,7 @@ module GameObjects.WalkingEnemy
   ) where
 
 import Lib.Image (readPngOrError)
-import Lib.Animation (AnimationBuilder)
+import Lib.Animation (MkAnimation)
 import Codec.Picture (DynamicImage)
 import ThirdParty.GraphicsGlossGame (animation)
 import Lib.Spritesheet (animFrames, animFramesFlip)
@@ -13,14 +13,14 @@ loadFirebug :: IO DynamicImage
 loadFirebug = readPngOrError "assets/firebug.png"
 
 data FirebugAnimations = FirebugAnimations
-  { walkDown  :: AnimationBuilder
-  , walkUp    :: AnimationBuilder
-  , walkRight :: AnimationBuilder
-  , walkLeft  :: AnimationBuilder
-  , dieDown   :: AnimationBuilder
-  , dieUp     :: AnimationBuilder
-  , dieRight  :: AnimationBuilder
-  , dieLeft   :: AnimationBuilder
+  { walkDown  :: MkAnimation
+  , walkUp    :: MkAnimation
+  , walkRight :: MkAnimation
+  , walkLeft  :: MkAnimation
+  , dieDown   :: MkAnimation
+  , dieUp     :: MkAnimation
+  , dieRight  :: MkAnimation
+  , dieLeft   :: MkAnimation
   }
 
 firebugAnimations :: IO FirebugAnimations
