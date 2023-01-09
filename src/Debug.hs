@@ -40,7 +40,7 @@ debugBoundingBox (G.Bitmap bData) = G.color G.red $ thickRectangleWire 2 w h
 debugBoundingBox _              = error "boundingBox: not a bitmap"
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
-debugSpriteBoundingBox (S.Sprite x y tile _) = G.translate x y $ debugBoundingBox tile
+debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ debugBoundingBox tile
 
 debugAndDrawSprite :: S.Sprite -> G.Picture
 debugAndDrawSprite = G.pictures . sequence [debugSpriteBoundingBox, draw]

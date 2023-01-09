@@ -1,29 +1,33 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 import Lib.Window (windowSize, windowPosition)
 import Graphics.Gloss
-import Debug.Trace (traceShowId, traceShow)
+import Debug.Trace (traceShowId, traceShow, trace)
 import GameObjects.Terraine
 import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed)
 import Lib.Spritesheet (genRowIndices, framePictures, framesIndexed, animFrames)
 import ThirdParty.GraphicsGlossGame (playInScene, picturing, animating, Animation, noAnimation, animation, animationPicture, translating, scenes)
-import GameObjects.WalkingEnemy (FirebugAnimations(walkDown, walkLeft), firebugAnimations)
+import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkLeft), firebugAnimations, firebugPictures, WalkingEnemyPictures (down))
 import Lib.Image (readPngOrError)
 import Data.Maybe (isNothing)
 import Lib.Animation (repeatingAnimation, drawingAnimation)
-import GameObjects.Sprite (Sprite, mkSprite)
+import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
+import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
 
 data GameState = GameState
   { anim :: Animation
   , anim2 :: Animation
-  , bug :: Sprite
+  , bug :: S.Sprite
   }
 
 mkGameState :: IO GameState
 mkGameState = do
   fba <- firebugAnimations
+  fbp <- firebugPictures
   return $ GameState
     { anim = noAnimation
     , anim2 = noAnimation
-    , bug = mkSprite 300 0 blank (walkDown fba)
+    , bug = mkNonAnimatedSprite 300 0 (-1) 0 (down fbp)
     }
 
 window :: Display
@@ -52,7 +56,7 @@ main = do
         { anim = repeatingAnimation (anim world) (walkLeft fba) now
         , anim2 = repeatingAnimation (anim2 world) (walkDown fba) now
         }
-    pic = cropTile 5 1 im
+    -- pic = cropTile 5 1 im
     -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
     -- pic = fromImageRGB8 im3
     animationScenes = scenes
@@ -65,8 +69,6 @@ main = do
     background 
     60
     gs 
-    -- render 
-    animationScenes
-    -- (picturing (\_ -> d1))
+    (picturing (\w -> S.draw $ bug w))
     (\_ _ -> id) 
-    [applyBs]
+    [\_ _ (GameState anim anim2 bug) -> GameState {anim, anim2, bug = S.update bug}]
