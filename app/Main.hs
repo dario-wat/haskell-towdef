@@ -3,8 +3,8 @@
 import Lib.Window (windowSize, windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss
 import Debug.Trace (traceShowId, traceShow, trace)
-import GameObjects.Terraine
-import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed, debugGrid)
+import GameObjects.Terrain
+import Debug
 import Lib.Spritesheet (genRowIndices, framePictures, framesIndexed, animFrames)
 import ThirdParty.GraphicsGlossGame (playInScene, picturing, animating, Animation, noAnimation, animation, animationPicture, translating, scenes)
 import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkLeft), firebugAnimations, firebugPictures, WalkingEnemyPictures (down))
@@ -42,14 +42,15 @@ background = white
 
 main :: IO ()
 main = do
-  im <- readTerraineImage
-  b <- terraineObjects
-  dter <- debugTerraine
+  im <- readTerrainImage
+  b <- terrainObjects
+  dter <- debugTerrain
   dss <- debugSpritesheet 128 64 "assets/firebug.png"
   d1 <- debugSpritesheetFramesIndexed 128 64 "assets/firebug.png" $ traceShowId $ genRowIndices 3 0 8
   fba <- firebugAnimations
   fb <- readPngOrError "assets/firebug.png"
   gs <- mkGameState
+  drTer <- debugExampleTerrain
   let
     applyBs now _ world = 
       world 
@@ -70,6 +71,6 @@ main = do
     60
     gs 
     -- (picturing (\w -> S.draw $ bug w))
-    (picturing $ const debugGrid)
+    (picturing $ const $ pictures [drTer, debugGrid])
     (\_ _ -> id) 
-    [\_ _ (GameState anim anim2 bug) -> GameState {anim, anim2, bug = S.update bug}]
+    [\_ _ (GameState anim anim2 bug) -> GameState {bug = S.update bug}]

@@ -31,15 +31,31 @@ gridYOffset :: Float
 gridYOffset = -20
 
 -- | x coordinate of the leftmost cell
-gridX :: Float
-gridX = x' $ fst gridPadding / 2
+gridStartX :: Float
+gridStartX = x' $ fst gridPadding / 2
 
 -- | y coordinate of the topmost cell
-gridY :: Float
-gridY = y' (snd gridPadding / 2) + gridYOffset
+gridStartY :: Float
+gridStartY = y' (snd gridPadding / 2) + gridYOffset
 
-gridRow :: Int -> Float
-gridRow row = gridY + fromIntegral row * cellSize
+-- | Bottom left x coordinate of a grid cell
+gridX :: Int -> Float
+gridX x = gridStartX + fromIntegral x * cellSize
 
-gridCol :: Int -> Float
-gridCol col = gridX + fromIntegral col * cellSize
+-- | Bottom left y coordinate of a grid cell
+gridY :: Int -> Float
+gridY y = gridStartY + fromIntegral y * cellSize
+
+-- | Center x coordinate of a grid cell
+gridCX :: Int -> Float
+gridCX x = gridX x + cellSize / 2
+
+-- | Center y coordinate of a grid cell
+gridCY :: Int -> Float
+gridCY y = gridY y + cellSize / 2
+
+gridCenterOf :: (Int, Int) -> (Int, Int) -> (Float, Float)
+gridCenterOf (x, y) (w, h) = (centerX, centerY)
+  where
+    centerX = gridX x + fromIntegral w * cellSize / 2
+    centerY = gridY y + fromIntegral h * cellSize / 2

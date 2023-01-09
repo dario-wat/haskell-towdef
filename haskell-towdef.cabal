@@ -28,7 +28,7 @@ library
       Const
       Debug
       GameObjects.Sprite
-      GameObjects.Terraine
+      GameObjects.Terrain
       GameObjects.WalkingEnemy
       Lib.Animation
       Lib.Grid
@@ -49,6 +49,7 @@ library
     , gloss
     , linear
     , unordered-containers
+    , utility-ht
     , vector
   default-language: Haskell2010
 
@@ -67,5 +68,6 @@ executable haskell-towdef-exe
     , haskell-towdef
     , linear
     , unordered-containers
+    , utility-ht
     , vector
   default-language: Haskell2010

@@ -26,6 +26,7 @@ dependencies:
 - JuicyPixels-extra
 - linear
 - unordered-containers
+- utility-ht
 - vector
 
 ghc-options:
