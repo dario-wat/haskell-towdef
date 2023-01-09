@@ -48,6 +48,17 @@ cropTiles :: Int -> Int -> Int -> Int -> DynamicImage -> Tile
 cropTiles r c w h img = Tile (fromImageRGBA8 $ cropFn $ convertRGBA8 img) w h
   where cropFn = crop (c * tileWidth) (r * tileHeight) (w * tileWidth) (h * tileHeight)
 
+-- | Draws a tile onto the grid
+-- Given row and column are the bottom left tile of multi cell tiles. E.g. if a
+-- tile is 3x3, the given row and column will be the coordinates of the grid
+-- where the bottom left cell will be drawn.
+drawTile :: Int -> Int -> Tile -> Picture
+drawTile x y (Tile picture w h) = translate xc yc picture
+  where (xc, yc) = gridCenterOf (x, y) (w, h)
+
+drawTerrain :: Terrain -> Picture
+drawTerrain = pictures . map (uncurry3 drawTile)
+
 data TerrainObjects = TerrainObjects
   { horizontalBridge    :: Tile
   , verticalBridge      :: Tile
@@ -124,7 +135,7 @@ terrainTiles :: IO TerrainTiles
 terrainTiles = do
   im <- readTerrainImage
   return $ TerrainTiles
-    { roadCrossing         = cropTiles 6  1 3 3 im
+    { roadCrossing         = cropTile  7  2 im
     , roadTopLeft          = cropTiles 1 11 2 2 im
     , roadTopRight         = cropTiles 1 13 2 2 im
     , roadBottomLeft       = cropTiles 3 11 2 2 im
@@ -137,14 +148,3 @@ terrainTiles = do
     , roadVertical         = cropTile  2  5 im
     , roadHorizontal       = cropTile  1  6 im
     }
-
--- | Draws a tile onto the grid
--- Given row and column are the bottom left tile of multi cell tiles. E.g. if a
--- tile is 3x3, the given row and column will be the coordinates of the grid
--- where the bottom left cell will be drawn.
-drawTile :: Int -> Int -> Tile -> Picture
-drawTile x y (Tile picture w h) = translate xc yc picture
-  where (xc, yc) = gridCenterOf (x, y) (w, h)
-
-drawTerrain :: Terrain -> Picture
-drawTerrain = pictures . map (uncurry3 drawTile)

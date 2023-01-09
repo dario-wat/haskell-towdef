@@ -144,5 +144,12 @@ debugExampleTerrain = do
       , (3, 3, T.roadVertical tTil)
       , (3, 4, T.roadVertical tTil)
       , (3, 5, T.roadTopLeftSharp tTil)
+      , (5, 6, T.roadHorizontal tTil)
+      , (6, 6, T.roadHorizontal tTil)
+      , (7, 6, T.roadCrossing tTil)
+      , (7, 4, T.roadBottomLeft tTil)
+      , (8, 6, T.roadHorizontal tTil)
+      , (9, 6, T.roadHorizontal tTil)
+      , (10, 6, T.horizontalBridge tObj)
       ]
   return $ T.drawTerrain terrainTiles
