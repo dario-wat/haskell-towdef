@@ -1,10 +1,10 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-import Lib.Window (windowSize, windowPosition)
+import Lib.Window (windowSize, windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss
 import Debug.Trace (traceShowId, traceShow, trace)
 import GameObjects.Terraine
-import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed)
+import Debug (debugSpritesheet, debugTerraine, debugSpritesheetFramesIndexed, debugGrid)
 import Lib.Spritesheet (genRowIndices, framePictures, framesIndexed, animFrames)
 import ThirdParty.GraphicsGlossGame (playInScene, picturing, animating, Animation, noAnimation, animation, animationPicture, translating, scenes)
 import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkLeft), firebugAnimations, firebugPictures, WalkingEnemyPictures (down))
@@ -31,7 +31,7 @@ mkGameState = do
     }
 
 window :: Display
-window = InWindow "Nice Window" windowSize windowPosition
+window = InWindow "Nice Window" windowSizeForInWindow windowPositionForInWindow
 -- window = FullScreen  -- needs special window sizing
 
 background :: Color
@@ -50,7 +50,7 @@ main = do
   fba <- firebugAnimations
   fb <- readPngOrError "assets/firebug.png"
   gs <- mkGameState
-  let 
+  let
     applyBs now _ world = 
       world 
         { anim = repeatingAnimation (anim world) (walkLeft fba) now
@@ -69,6 +69,7 @@ main = do
     background 
     60
     gs 
-    (picturing (\w -> S.draw $ bug w))
+    -- (picturing (\w -> S.draw $ bug w))
+    (picturing $ const debugGrid)
     (\_ _ -> id) 
     [\_ _ (GameState anim anim2 bug) -> GameState {anim, anim2, bug = S.update bug}]

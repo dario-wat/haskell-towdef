@@ -1,0 +1,7 @@
+- Animate everything
+- Make bugs follow the path
+- Make bugs face the direction they are moving at
+- Towers (create, upgrade, shoot bullets)
+- Enemies take damage and die
+- Generate maps and paths
+- Grid

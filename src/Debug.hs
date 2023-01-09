@@ -13,8 +13,7 @@ import Lib.Image (readPngOrError)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terraine as T
-import Lib.Window (windowBottomLeft, windowTopRight)
-import Lib.Grid (cellSize)
+import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridCol, gridRow, gridRows, gridCols)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
 
@@ -120,13 +119,9 @@ debugTerraine = do
     , mkStaticSprite    150    300 $ T.grass tTil
     ]
 
--- TODO right now it draws the entire window, but it should be bounded
--- by a rectangle. It should use grid size and cell size to determine
 debugGrid :: G.Picture
 debugGrid = G.pictures $ map G.line $ verticalLines ++ horizontalLines
   where
-    (startX, startY) = windowBottomLeft
-    (endX, endY) = windowTopRight
-    cellSizeF = fromIntegral cellSize
-    verticalLines   = map (\x -> [(x, startY), (x, endY)]) [startX, startX + cellSizeF .. endX]
-    horizontalLines = map (\y -> [(startX, y), (endX, y)]) [startY, startY + cellSizeF .. endY]
+    (endX, endY) = (gridX + gridWidth, gridY + gridHeight)
+    verticalLines   = [[(gridCol c, gridY), (gridCol c, endY)] | c <- [0..gridCols]]
+    horizontalLines = [[(gridX, gridRow r), (endX, gridRow r)] | r <- [0..gridRows]]

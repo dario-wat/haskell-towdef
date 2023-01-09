@@ -1,32 +1,35 @@
-module Lib.Window
-  ( windowSize
-  , windowWidth
-  , windowHeight
-  , windowPosition
-  , windowTopLeft
-  , windowTopRight
-  , windowBottomLeft
-  , windowBottomRight
-  ) where
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+module Lib.Window where
 
-windowSize :: (Int, Int)
+import Data.Bifunctor (Bifunctor(bimap))
+
+windowSize :: (Float, Float)
 windowSize = (1440, 810)
 -- windowSize = (1920, 1080)  -- only for fullscreen
 
-windowWidth :: Int
+windowSizeForInWindow :: (Int, Int)
+windowSizeForInWindow = bimap round round windowSize
+
+windowWidth :: Float
 windowWidth = fst windowSize
 
-windowHeight :: Int
+windowHeight :: Float
 windowHeight = snd windowSize
 
-windowPosition :: (Int, Int)
+windowPosition :: (Float, Float)
 windowPosition = (0, 0)
 
+windowPositionForInWindow :: (Int, Int)
+windowPositionForInWindow = bimap round round windowPosition
+
 halfWindowSize :: (Float, Float)
-halfWindowSize = (x, y)
-  where
-    x = fromIntegral $ fst windowSize `quot` 2
-    y = fromIntegral $ snd windowSize `quot` 2
+halfWindowSize = (fst windowSize / 2, snd windowSize / 2)
+
+halfWindowWidth :: Float
+halfWindowWidth = fst halfWindowSize
+
+halfWindowHeight :: Float
+halfWindowHeight = snd halfWindowSize
 
 windowTopLeft :: (Float, Float)
 windowTopLeft = (-x, y)
@@ -44,3 +47,10 @@ windowBottomLeft = (-x, -y)
 windowBottomRight :: (Float, Float)
 windowBottomRight = (x, -y)
   where (x, y) = halfWindowSize
+
+-- x' and y' are coordinates relative to the bottom left corner of the window
+x' :: Float -> Float
+x' x = x - halfWindowWidth
+
+y' :: Float -> Float
+y' y = y - halfWindowHeight

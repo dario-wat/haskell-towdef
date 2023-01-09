@@ -1,18 +1,10 @@
-module Lib.Grid
-  ( cellSize
-  , gridSize
-  , gridCols
-  , gridRows
-  , gridDimensions
-  , gridWidth
-  , gridHeight
-  , gridPadding
-  ) where
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+module Lib.Grid where
 
-import Lib.Window (windowWidth, windowHeight)
+import Lib.Window (windowWidth, windowHeight, x', y')
 
-cellSize :: Int
-cellSize = 64
+cellSize :: Float
+cellSize = 64   -- same as terraine tile size
 
 gridSize :: (Int, Int)
 gridSize = (21, 11) -- fits for 1440x810, minus 1 extra cell for the border
@@ -23,20 +15,31 @@ gridCols = fst gridSize
 gridRows :: Int
 gridRows = snd gridSize
 
-gridDimensions :: (Int, Int)
-gridDimensions = (gridCols * cellSize, gridRows * cellSize)
+gridDimensions :: (Float, Float)
+gridDimensions = (fromIntegral gridCols * cellSize, fromIntegral gridRows * cellSize)
 
-gridWidth :: Int
+gridWidth :: Float
 gridWidth = fst gridDimensions
 
-gridHeight :: Int
+gridHeight :: Float
 gridHeight = snd gridDimensions
 
-
--- TODO here I would need to calculate the position of the grid. It should include
--- padding from the sides and top and bottom. And we should leave space at the top
--- (or the bottom) for the score and other stuff.
-
-gridPadding :: (Int, Int)
+gridPadding :: (Float, Float)
 gridPadding = (windowWidth - gridWidth, windowHeight - gridHeight)
 
+gridYOffset :: Float
+gridYOffset = -20
+
+-- | x coordinate of the leftmost cell
+gridX :: Float
+gridX = x' $ fst gridPadding / 2
+
+-- | y coordinate of the topmost cell
+gridY :: Float
+gridY = y' (snd gridPadding / 2) + gridYOffset
+
+gridRow :: Int -> Float
+gridRow row = gridY + fromIntegral row * cellSize
+
+gridCol :: Int -> Float
+gridCol col = gridX + fromIntegral col * cellSize

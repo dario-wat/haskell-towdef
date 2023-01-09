@@ -19,7 +19,7 @@ data Sprite = Sprite
   , velX   :: Float
   , velY   :: Float
   , pic    :: Picture
-  , mkAnim :: MkAnimation
+  , mkAnim :: MkAnimation   -- TODO what is this?
   }
 
 draw :: Sprite -> Picture
