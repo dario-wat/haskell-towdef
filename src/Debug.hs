@@ -7,7 +7,7 @@ module Debug
   , debugPointWithCoords
   , debugGrid
   , debugExampleTerrain
-  , debugConnectTwoPoints
+  , debugPath
   ) where
 
 import qualified Graphics.Gloss as G
@@ -15,10 +15,11 @@ import Lib.Image (readPngOrError)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, gridArraysStr, gridArrayStr)
+import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, gridArraysStr, gridArrayStr, emtpyGrid, GridArray)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
-import Lib.Path (genRandomPoints, gridPath, connectTwoPoints, connectAllPoints, createAllPaths)
+import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths)
+import Data.Array ((//))
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
 -- n is the thickness so we shouldn't use this with high numbers
@@ -156,15 +157,17 @@ debugExampleTerrain = do
       ]
   return $ T.drawTerrain terrainTiles
 
-debugConnectTwoPoints :: IO ()
-debugConnectTwoPoints = do
+debugGridPath :: Path -> GridArray
+debugGridPath path = emtpyGrid // zip path ['a'..]
+
+debugPath :: IO ()
+debugPath = do
   points <- genRandomPoints 3
   putStrLn "\nPoints:"
-  putStrLn $ gridArrayStr $ gridPath points
+  putStrLn $ gridArrayStr $ debugGridPath points
+  putStrLn "\nConnect 2 points:"
+  putStrLn $ gridArraysStr $ map debugGridPath $ connectTwoPoints (head points) (points !! 1)
+  putStrLn "\nConnect all points:"
+  putStrLn $ gridArraysStr $ map debugGridPath $ concat $ connectAllPoints points
   putStrLn "\nPaths:"
-  print $ connectTwoPoints (head points) (last points)
-  -- putStrLn $ show $ connectAllPoints points
-  -- putStrLn $ gridArraysStr $ map gridPath $ connectTwoPoints (head points) (last points)
-  -- putStrLn $ gridArraysStr $ map gridPath $ concat $ connectAllPoints points
-  -- putStrLn "\nPaths:"
-  putStrLn . gridArraysStr . map gridPath $ createAllPaths points
+  putStrLn . gridArraysStr . map debugGridPath $ createAllPaths points

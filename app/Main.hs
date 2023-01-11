@@ -13,7 +13,7 @@ import Data.Maybe (isNothing)
 import Lib.Animation (repeatingAnimation, drawingAnimation)
 import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
-import Lib.Path (genRandomPath, gridPath, createAllPaths, genRandomPoints)
+import Lib.Path (genRandomPath, genRandomPoints)
 import Lib.Grid (emtpyGrid, gridArrayStr, gridArraysStr)
 import Data.Array (Array, listArray, assocs, ixmap, elems, (//))
 
@@ -58,7 +58,7 @@ main = do
   -- print gridArray
   -- rs <- genRandomPoints 20
   -- print rs
-  debugConnectTwoPoints
+  debugPath
   -- eps <- genRandomPath
   -- print eps
   -- putStrLn . gridArraysStr . map gridPath . createAllPaths =<< genRandomPoints 5

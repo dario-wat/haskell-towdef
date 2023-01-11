@@ -6,13 +6,13 @@ module Lib.Path
   , genRandomPoints
   , connectTwoPoints
   , connectAllPoints
-  , gridPath
+  , Path
+  , Point
   ) where
 
-import Lib.Grid (gridCols, gridRows, GridArray, emtpyGrid)
+import Lib.Grid (gridCols, gridRows)
 import System.Random (randomRIO)
-import Data.Array ((//))
-import Debug.Trace (traceShowId)
+import Data.List (group)
 
 type Point = (Int, Int)
 type Path = [Point]
@@ -56,18 +56,13 @@ genStartEndPoints = do
 -- There is only one path if the points are on the same row or column.
 -- Otherwise there are two paths, one going up and one going right.
 connectTwoPoints :: Point -> Point -> [Path]
-connectTwoPoints (x1, y1) (x2, y2) = [pathX1 ++ pathY2, pathY1 ++ pathX2]
+connectTwoPoints (x1, y1) (x2, y2)
+  | x1 == x2 || y1 == y2 = [singlePath]
+  | otherwise            = [path1, path2]
   where
-    range (i, j)
-      | i == j    = []
-      | i < j     = [i..j]
-      | otherwise = [i,i-1..j]
-    xRange = range (x1, x2)
-    yRange = range (y1, y2)
-    pathX1 = [(x, y1) | x <- xRange]
-    pathX2 = [(x, y2) | x <- xRange]
-    pathY1 = [(x1, y) | y <- yRange]
-    pathY2 = [(x2, y) | y <- yRange]
+    path1 = [(x1, y1), (x1, y2), (x2, y2)]
+    path2 = [(x1, y1), (x2, y1), (x2, y2)]
+    singlePath = [(x1, y1), (x2, y2)]
 
 -- | Creates a list of paths for each adjacent pair of points
 connectAllPoints :: [Point] -> [[Path]]
@@ -75,18 +70,19 @@ connectAllPoints []         = []
 connectAllPoints [_]        = []
 connectAllPoints (p1:p2:ps) = connectTwoPoints p1 p2 : connectAllPoints (p2:ps)
 
--- | Combines all path lists created by connectAllPoints recursively
+-- -- | Combines all path lists created by connectAllPoints recursively
 combinePaths :: [[Path]] -> [Path]
-combinePaths = combinePathsAcc []
+combinePaths = combinePathsAcc [[]]
 
 combinePathsAcc :: [Path] -> [[Path]] -> [Path]
-combinePathsAcc acc [] = acc
-combinePathsAcc acc ([p]:ps) = combinePathsAcc (concat (p : acc) : acc) ps
-combinePathsAcc acc ([p1,p2]:ps)  = combinePathsAcc (concat (p1 : acc) : concat (p2 : acc) : acc) ps
-combinePathsAcc _ _ = error "combinePathsAcc: impossible"
+combinePathsAcc acc []           = acc
+combinePathsAcc acc ([p]:ps)     = combinePathsAcc (map (++p) acc) ps
+combinePathsAcc acc ([p1,p2]:ps) = combinePathsAcc (map (++p1) acc ++ map (++p2) acc) ps
+combinePathsAcc _   _            = error "combinePathsAcc: impossible"
 
 createAllPaths :: [Point] -> [Path]
-createAllPaths = combinePaths . connectAllPoints
+createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoints
+  where removeConsecutiveDuplicates = map head . group
 
 -- TODO
 genRandomPath :: IO Path
@@ -95,6 +91,3 @@ genRandomPath = do
   xs <- genRandomPoints n
   (start, end) <- genStartEndPoints
   return $ start : xs ++ [end]
-
-gridPath :: Path -> GridArray
-gridPath path = emtpyGrid // map (,'X') path
