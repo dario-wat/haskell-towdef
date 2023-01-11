@@ -6,3 +6,5 @@
 - Generate maps and paths
 - Grid
 - Water
+- Generate path
+- Generate terraine from the path

@@ -33,6 +33,7 @@ library
       Lib.Animation
       Lib.Grid
       Lib.Image
+      Lib.Path
       Lib.Spritesheet
       Lib.Window
       ThirdParty.GraphicsGlossGame
@@ -45,9 +46,11 @@ library
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , array
     , base >=4.7 && <5
     , gloss
     , linear
+    , random
     , unordered-containers
     , utility-ht
     , vector
@@ -63,10 +66,12 @@ executable haskell-towdef-exe
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , array
     , base >=4.7 && <5
     , gloss
     , haskell-towdef
     , linear
+    , random
     , unordered-containers
     , utility-ht
     , vector

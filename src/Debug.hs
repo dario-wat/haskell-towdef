@@ -7,6 +7,7 @@ module Debug
   , debugPointWithCoords
   , debugGrid
   , debugExampleTerrain
+  , debugConnectTwoPoints
   ) where
 
 import qualified Graphics.Gloss as G
@@ -14,9 +15,10 @@ import Lib.Image (readPngOrError)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX)
+import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, gridArraysStr, gridArrayStr)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
+import Lib.Path (genRandomPoints, gridPath, connectTwoPoints, connectAllPoints, createAllPaths)
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
 -- n is the thickness so we shouldn't use this with high numbers
@@ -137,7 +139,7 @@ debugExampleTerrain = do
   tTil <- T.terrainTiles
   tObj <- T.terrainObjects
   let 
-    grassField = pictures [T.drawTile x y $ T.grass tTil | x <- [0..gridCols-1], y <- [0..gridRows-1]]
+    --grassField = pictures [T.drawTile x y $ T.grass tTil | x <- [0..gridCols-1], y <- [0..gridRows-1]]
     terrainTiles = 
       [ (0, 0, T.roadTopLeft tTil)
       , (2, 1, T.roadBottomRight tTil)
@@ -153,3 +155,16 @@ debugExampleTerrain = do
       , (10, 6, T.horizontalBridge tObj)
       ]
   return $ T.drawTerrain terrainTiles
+
+debugConnectTwoPoints :: IO ()
+debugConnectTwoPoints = do
+  points <- genRandomPoints 3
+  putStrLn "\nPoints:"
+  putStrLn $ gridArrayStr $ gridPath points
+  putStrLn "\nPaths:"
+  print $ connectTwoPoints (head points) (last points)
+  -- putStrLn $ show $ connectAllPoints points
+  -- putStrLn $ gridArraysStr $ map gridPath $ connectTwoPoints (head points) (last points)
+  -- putStrLn $ gridArraysStr $ map gridPath $ concat $ connectAllPoints points
+  -- putStrLn "\nPaths:"
+  putStrLn . gridArraysStr . map gridPath $ createAllPaths points

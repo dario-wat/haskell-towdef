@@ -2,6 +2,11 @@
 module Lib.Grid where
 
 import Lib.Window (windowWidth, windowHeight, x', y')
+import Data.Array (Array, listArray, elems)
+import Data.List.HT (sliceHorizontal)
+import Data.List (intercalate)
+
+type GridArray = Array (Int, Int) Char
 
 cellSize :: Float
 cellSize = 64   -- same as terraine tile size
@@ -27,9 +32,6 @@ gridHeight = snd gridDimensions
 gridPadding :: (Float, Float)
 gridPadding = (windowWidth - gridWidth, windowHeight - gridHeight)
 
-gridYOffset :: Float
-gridYOffset = -20
-
 -- | x coordinate of the leftmost cell
 gridStartX :: Float
 gridStartX = x' $ fst gridPadding / 2
@@ -37,6 +39,7 @@ gridStartX = x' $ fst gridPadding / 2
 -- | y coordinate of the topmost cell
 gridStartY :: Float
 gridStartY = y' (snd gridPadding / 2) + gridYOffset
+  where gridYOffset = -20
 
 -- | Bottom left x coordinate of a grid cell
 gridX :: Int -> Float
@@ -59,3 +62,12 @@ gridCenterOf (x, y) (w, h) = (centerX, centerY)
   where
     centerX = gridX x + fromIntegral w * cellSize / 2
     centerY = gridY y + fromIntegral h * cellSize / 2
+
+emtpyGrid :: GridArray
+emtpyGrid = listArray ((0, 0), (gridCols - 1, gridRows - 1)) $ repeat '.'
+
+gridArrayStr :: GridArray -> String
+gridArrayStr = intercalate "\n" . sliceHorizontal gridRows . elems
+
+gridArraysStr :: [GridArray] -> String
+gridArraysStr = intercalate "\n\n" . map gridArrayStr

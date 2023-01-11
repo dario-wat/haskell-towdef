@@ -20,11 +20,13 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/githubuser/haskell-towdef#readme>
 
 dependencies:
+- array
 - base >= 4.7 && < 5
 - gloss
 - JuicyPixels
 - JuicyPixels-extra
 - linear
+- random
 - unordered-containers
 - utility-ht
 - vector
