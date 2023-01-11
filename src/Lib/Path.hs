@@ -2,10 +2,13 @@
 
 module Lib.Path 
   ( genRandomPath
-  , createAllPaths
   , genRandomPoints
+  , genStartEndPoints
   , connectTwoPoints
   , connectAllPoints
+  , createAllPaths
+  , isValidPath
+  , segmentsOverlap
   , Path
   , Point
   ) where
@@ -83,6 +86,36 @@ combinePathsAcc _   _            = error "combinePathsAcc: impossible"
 createAllPaths :: [Point] -> [Path]
 createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoints
   where removeConsecutiveDuplicates = map head . group
+
+-- | Checks whether two path segments overlap
+segmentsOverlap :: (Point, Point) -> (Point, Point) -> Bool
+segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
+  | all (== x1) [x2, x3, x4] = overlap y1 y2 y3 y4
+  | all (== y1) [y2, y3, y4] = overlap x1 x2 x3 x4
+  | otherwise                = False
+  where 
+    overlap a1 a2 b1 b2
+      | a1 > a2   = overlap a2 a1 b1 b2
+      | b1 > b2   = overlap a1 a2 b2 b1
+      | a1 > b1   = overlap b1 b2 a1 a2
+      | a2 <= b1  = False
+      | otherwise = True
+
+-- | Checks whether a path is valid. That means it needs to satisfy 
+-- the following conditions:
+--    1. Has to have at least two points
+--    2. Paths cannot overlap vertically or horizontally, 
+--       but can cross perpendicularly
+--    3. 
+isValidPath :: Path -> Bool
+isValidPath [] = False
+isValidPath [_] = False
+isValidPath path = (not . any (uncurry segmentsOverlap)) allSegmentPairs
+  where
+    allSegments = zip path (tail path)
+    allSegmentPairs = filter (uncurry (/=)) $ cartProd allSegments allSegments
+    cartProd xs ys = [(x,y) | x <- xs, y <- ys]
+    
 
 -- TODO
 genRandomPath :: IO Path

@@ -18,7 +18,7 @@ import qualified GameObjects.Terrain as T
 import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, gridArraysStr, gridArrayStr, emtpyGrid, GridArray)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
-import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths)
+import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath)
 import Data.Array ((//))
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
@@ -146,7 +146,9 @@ debugExampleTerrain = do
       , (2, 1, T.roadBottomRight tTil)
       , (3, 3, T.roadVertical tTil)
       , (3, 4, T.roadVertical tTil)
-      , (3, 5, T.roadTopLeftSharp tTil)
+      , (3, 5, T.roadVertical tTil)
+      , (3, 6, T.roadTopLeftSharp tTil)
+      , (4, 6, T.roadHorizontal tTil)
       , (5, 6, T.roadHorizontal tTil)
       , (6, 6, T.roadHorizontal tTil)
       , (7, 6, T.roadCrossing tTil)
@@ -154,6 +156,9 @@ debugExampleTerrain = do
       , (8, 6, T.roadHorizontal tTil)
       , (9, 6, T.roadHorizontal tTil)
       , (10, 6, T.horizontalBridge tObj)
+      , (9, 4, T.roadTopRightSharp tTil)
+      , (9, 3, T.roadBottomRightSharp tTil)
+      , (8, 3, T.roadHorizontal tTil)
       ]
   return $ T.drawTerrain terrainTiles
 
@@ -162,12 +167,18 @@ debugGridPath path = emtpyGrid // zip path ['a'..]
 
 debugPath :: IO ()
 debugPath = do
-  points <- genRandomPoints 3
+  (startPoint, endPoint) <- genStartEndPoints
+  middlePoints <- genRandomPoints 1
+  let points = startPoint : middlePoints ++ [endPoint]
   putStrLn "\nPoints:"
   putStrLn $ gridArrayStr $ debugGridPath points
-  putStrLn "\nConnect 2 points:"
-  putStrLn $ gridArraysStr $ map debugGridPath $ connectTwoPoints (head points) (points !! 1)
-  putStrLn "\nConnect all points:"
-  putStrLn $ gridArraysStr $ map debugGridPath $ concat $ connectAllPoints points
-  putStrLn "\nPaths:"
-  putStrLn . gridArraysStr . map debugGridPath $ createAllPaths points
+  -- putStrLn "\nConnect 2 points:"
+  -- putStrLn $ gridArraysStr $ map debugGridPath $ connectTwoPoints (head points) (points !! 1)
+  -- putStrLn "\nConnect all points:"
+  -- putStrLn $ gridArraysStr $ map debugGridPath $ concat $ connectAllPoints points
+  -- putStrLn "\nPaths:"
+  -- putStrLn . gridArraysStr . map debugGridPath $ createAllPaths points
+  -- putStrLn "\nInvalid paths:"
+  -- putStrLn . gridArraysStr . map debugGridPath $ filter (not . isValidPath) $ createAllPaths points
+  putStrLn "\nValid paths:"
+  putStrLn . gridArraysStr . map debugGridPath $ filter isValidPath $ createAllPaths points

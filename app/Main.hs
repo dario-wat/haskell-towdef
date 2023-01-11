@@ -62,26 +62,26 @@ main = do
   -- eps <- genRandomPath
   -- print eps
   -- putStrLn . gridArraysStr . map gridPath . createAllPaths =<< genRandomPoints 5
-  -- let
-  --   applyBs now _ world = 
-  --     world 
-  --       { anim = repeatingAnimation (anim world) (walkLeft fba) now
-  --       , anim2 = repeatingAnimation (anim2 world) (walkDown fba) now
-  --       }
-  --   -- pic = cropTile 5 1 im
-  --   -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
-  --   -- pic = fromImageRGB8 im3
-  --   animationScenes = scenes
-  --     [ drawingAnimation 128 64 anim
-  --     , drawingAnimation (-100) 100 anim2
-  --     , drawingAnimation (-200) 100 anim
-  --     ]
-  -- playInScene
-  --   window 
-  --   background 
-  --   60
-  --   gs 
-  --   -- (picturing (\w -> S.draw $ bug w))
-  --   (picturing $ const $ pictures [drTer, debugGrid])
-  --   (\_ _ -> id) 
-  --   [\_ _ (GameState anim anim2 bug) -> GameState {bug = S.update bug}]
+  let
+    applyBs now _ world = 
+      world 
+        { anim = repeatingAnimation (anim world) (walkLeft fba) now
+        , anim2 = repeatingAnimation (anim2 world) (walkDown fba) now
+        }
+    -- pic = cropTile 5 1 im
+    -- im3 = crop (5*64) (1*64) 64 64 $ convertRGB8 im2
+    -- pic = fromImageRGB8 im3
+    animationScenes = scenes
+      [ drawingAnimation 128 64 anim
+      , drawingAnimation (-100) 100 anim2
+      , drawingAnimation (-200) 100 anim
+      ]
+  playInScene
+    window 
+    background 
+    60
+    gs 
+    -- (picturing (\w -> S.draw $ bug w))
+    (picturing $ const $ pictures [drTer, debugGrid])
+    (\_ _ -> id) 
+    [\_ _ (GameState anim anim2 bug) -> GameState {bug = S.update bug}]
