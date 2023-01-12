@@ -11,42 +11,20 @@ module Debug
   , gridArraysStr
   ) where
 
+-- TODO WIP
+
 import qualified Graphics.Gloss as G
-import Lib.Image (readPngOrError)
+import Lib.Image (readPngOrError, boundingBox)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Grid (Grid(..), emptyGrid, gridRows, gridArrayStr, gridArraysStr)
-import Graphics.Gloss (Picture, pictures, rectangleWire)
+import Lib.Grid (Grid(..), emptyGrid, gridArrayStr, gridArraysStr)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
 import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath, gridifyPath, genRandomPath)
-import Data.Array ((//), elems)
-import Data.List (intercalate)
-import Data.List.HT (sliceHorizontal)
-
--- Draw a rectangle with a border of given thickness. Complexity is O(n) where
--- n is the thickness so we shouldn't use this with high numbers
-thickRectangleWire :: Float -> Float -> Float -> Picture
-thickRectangleWire thickness w h = 
-  pictures $ map rectangleWithThickness $ filter isValidThickness [minTh..maxTh]
-  where 
-    floorF = fromIntegral . (floor :: Float -> Int)
-    (minTh, maxTh) = (floorF $ -thickness / 2, floorF thickness / 2)
-    isValidThickness t = w + t >= 0 && h + t >= 0
-    rectangleWithThickness t = rectangleWire (w + t) (h + t)
-
-bitmapSizeF :: G.BitmapData -> (Float, Float)
-bitmapSizeF bData = (fromIntegral w, fromIntegral h)
-  where (w, h) = G.bitmapSize bData
-
--- NOTE works only on bitmaps
-debugBoundingBox :: G.Picture -> G.Picture
-debugBoundingBox (G.Bitmap bData) = G.color G.red $ thickRectangleWire 2 w h
-  where (w, h) = bitmapSizeF bData
-debugBoundingBox _              = error "boundingBox: not a bitmap"
+import Data.Array ((//))
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
-debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ debugBoundingBox tile
+debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ boundingBox tile
 
 debugAndDrawSprite :: S.Sprite -> G.Picture
 debugAndDrawSprite = G.pictures . sequence [debugSpriteBoundingBox, draw]
