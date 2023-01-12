@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TupleSections #-}
 
-module Lib.Path 
+module Lib.Level.Path 
   ( genRandomPath
   , genRandomPoints
   , genStartEndPoints
@@ -20,7 +20,7 @@ module Lib.Path
 -- 1. Make unused functions private (remove from module export)
 
 
-import Lib.Grid (gridCols, gridRows, Grid(..), emptyGrid)
+import Lib.Level.Grid (gridCols, gridRows, Grid(..), emptyGrid)
 import System.Random (randomRIO)
 import Data.List (group)
 import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl)

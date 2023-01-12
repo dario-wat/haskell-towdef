@@ -31,10 +31,10 @@ library
       GameObjects.Terrain
       GameObjects.WalkingEnemy
       Lib.Animation
-      Lib.Grid
       Lib.Image
-      Lib.MapGenerator
-      Lib.Path
+      Lib.Level.Grid
+      Lib.Level.MapGenerator
+      Lib.Level.Path
       Lib.Spritesheet
       Lib.Util
       Lib.Window

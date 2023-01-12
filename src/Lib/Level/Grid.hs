@@ -1,6 +1,4 @@
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
-
-module Lib.Grid 
+module Lib.Level.Grid 
   ( Grid(..)
   , gridCenterOf
   , gridCols

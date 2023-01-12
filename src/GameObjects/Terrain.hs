@@ -14,7 +14,7 @@ import Codec.Picture (DynamicImage, convertRGBA8)
 import Codec.Picture.Extra (crop)
 import Graphics.Gloss (Picture, pictures, translate)
 import Const (spriteWidth, spriteHeight)
-import Lib.Grid (gridCenterOf)
+import Lib.Level.Grid (gridCenterOf)
 import Data.Tuple.HT (uncurry3)
 
 data Tile = Tile 

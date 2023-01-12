@@ -13,7 +13,7 @@ import Data.Maybe (isNothing)
 import Lib.Animation (repeatingAnimation, drawingAnimation)
 import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
-import Lib.Path (genRandomPath, genRandomPoints, picturizePath)
+import Lib.Level.Path (genRandomPath, genRandomPoints, picturizePath)
 import Data.Array (Array, listArray, assocs, ixmap, elems, (//))
 
 data GameState = GameState

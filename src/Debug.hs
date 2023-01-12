@@ -18,9 +18,9 @@ import Lib.Image (readPngOrError, boundingBox)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Grid (Grid(..), emptyGrid, gridArrayStr, gridArraysStr)
+import Lib.Level.Grid (Grid(..), emptyGrid, gridArrayStr, gridArraysStr)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
-import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath, gridifyPath, genRandomPath)
+import Lib.Level.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath, gridifyPath, genRandomPath)
 import Data.Array ((//))
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
