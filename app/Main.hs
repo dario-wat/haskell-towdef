@@ -13,7 +13,7 @@ import Data.Maybe (isNothing)
 import Lib.Animation (repeatingAnimation, drawingAnimation)
 import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
-import Lib.Path (genRandomPath, genRandomPoints)
+import Lib.Path (genRandomPath, genRandomPoints, picturizePath)
 import Data.Array (Array, listArray, assocs, ixmap, elems, (//))
 
 data GameState = GameState
@@ -53,12 +53,12 @@ main = do
   gs <- mkGameState
   drTer <- debugExampleTerrain
   path <- genRandomPath
-  -- pathPic <- picturizePath path
+  pathPic <- picturizePath path
   -- putStrLn . show =<< genRandomPoints 100
   -- print gridArray
   -- rs <- genRandomPoints 20
   -- print rs
-  -- debugPath
+  debugPath
   -- eps <- genRandomPath
   -- print eps
   -- putStrLn . gridArraysStr . map gridPath . createAllPaths =<< genRandomPoints 5
@@ -82,6 +82,6 @@ main = do
     60
     gs 
     -- (picturing (\w -> S.draw $ bug w))
-    (picturing $ const $ pictures [dter])
+    (picturing $ const $ pictures [pathPic])
     (\_ _ -> id) 
     [\_ _ (GameState anim anim2 bug) -> GameState {bug = S.update bug}]

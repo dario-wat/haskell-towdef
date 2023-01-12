@@ -11,7 +11,7 @@ module Lib.Path
   , isValidPath
   , gridifyPath
   , segmentsOverlap
-  -- , picturizePath
+  , picturizePath
   , Path
   , Point
   ) where
@@ -23,14 +23,26 @@ module Lib.Path
 import Lib.Grid (gridCols, gridRows, Grid(..), emptyGrid)
 import System.Random (randomRIO)
 import Data.List (group)
-import Lib.Util (cartProd, manhattanDist)
+import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl)
 import Graphics.Gloss (Picture)
-import GameObjects.Terrain (terrainTiles, drawTerrain, TerrainTiles (roadHorizontal))
+import GameObjects.Terrain (terrainTiles, drawTerrain, TerrainTiles (roadHorizontal), Terrain (Terrain))
 import Data.Array ((//))
-import Data.Maybe (mapMaybe)
+import Data.Maybe (mapMaybe, isJust, fromJust)
+import qualified Control.Monad.HT as M (until)
+import Data.Bifunctor (Bifunctor(second))
 
 type Point = (Int, Int)
 type Path = [Point]
+type PathSegment = (Point, Point)
+
+data CornerType = UpLeft | UpRight | DownLeft | DownRight
+  deriving (Show, Eq)
+
+cornerChar :: CornerType -> Char
+cornerChar UpLeft    = '┐'
+cornerChar UpRight   = '┌'
+cornerChar DownLeft  = '┘'
+cornerChar DownRight = '└'
 
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
@@ -102,10 +114,10 @@ createAllPaths :: [Point] -> [Path]
 createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoints
   where removeConsecutiveDuplicates = map head . group
 
-pathSegments :: Path -> [(Point, Point)]
+pathSegments :: Path -> [PathSegment]
 pathSegments path = zip path (tail path)
 
-allSegmentPairs :: Path -> [((Point, Point), (Point, Point))]
+allSegmentPairs :: Path -> [(PathSegment, PathSegment)]
 allSegmentPairs path = filter (uncurry (/=)) $ cartProd allSegments allSegments
   where allSegments = pathSegments path
 
@@ -113,7 +125,7 @@ pathLength :: Path -> Int
 pathLength = sum . map (uncurry manhattanDist) . pathSegments
 
 -- | Checks whether two path segments overlap
-segmentsOverlap :: (Point, Point) -> (Point, Point) -> Bool
+segmentsOverlap :: PathSegment -> PathSegment -> Bool
 segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
   | all (== x1) [x2, x3, x4] = overlap y1 y2 y3 y4
   | all (== y1) [y2, y3, y4] = overlap x1 x2 x3 x4
@@ -125,6 +137,30 @@ segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
       | a1 > b1   = overlap b1 b2 a1 a2
       | a2 <= b1  = False
       | otherwise = True
+
+segmentCrossing :: PathSegment -> PathSegment -> Maybe Point
+segmentCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
+  | x1 == x2 && y3 == y4 && inRangeAbsExcl (x3, x4) x1 && inRangeAbsExcl (y1, y2) y3 = Just (x1, y3)
+  | x3 == x4 && y1 == y2 && inRangeAbsExcl (x1, x2) x3 && inRangeAbsExcl (y3, y4) y1 = Just (x3, y1)
+  | otherwise = Nothing
+
+segmentCornerType :: PathSegment -> PathSegment -> Maybe (Point, CornerType)
+segmentCornerType (a1, b1) (a2, b2)
+  | a1 == a2 && b1 == b2 || a1 == b2 && b1 == a2 = Nothing
+  | a1 == a2 = getCornerType b1 a1 b2
+  | a1 == b2 = getCornerType b1 a1 a2
+  | b1 == a2 = getCornerType a1 b1 b2
+  | b1 == b2 = getCornerType a1 b1 a2
+  | otherwise = Nothing
+  where
+    getCornerType (x1, y1) p@(x2, y2) (x3, y3)
+      | x1 == x3 || y1 == y3 = Nothing    -- Not a corner (straight line)
+      | x1 > x3              = getCornerType (x3, y3) (x2, y2) (x1, y1)
+      | x1 < x2  && y3 > y2  = Just (p, UpLeft)
+      | x1 < x2  && y3 < y2  = Just (p, DownLeft)
+      | x1 == x2 && y1 < y2  = Just (p, DownRight)
+      | x1 == x2 && y1 > y2  = Just (p, UpRight)
+      | otherwise            = Nothing
 
 -- | Checks whether a path is valid. That means it needs to satisfy 
 -- the following conditions:
@@ -149,30 +185,21 @@ gridifyPath path = Grid $ unGrid emptyGrid // pathIndices // turnIndices // cros
       | x1 == x2  = [((x1, y), '|') | y <- [min y1 y2 .. max y1 y2]]
       | y1 == y2  = [((x, y1), '_') | x <- [min x1 x2 .. max x1 x2]]
       | otherwise = error "gridifyPath: impossible"
-    turnIndices = map (\s@(a, _) -> (a, turnType s)) $ pathSegments path
-    turnType ((x1, y1), (x2, y2))
-      | x1 == x2  = if y1 < y2 then 'v' else '^'
-      | y1 == y2  = if x1 < x2 then '>' else '<'
-      | otherwise = error "gridifyPath: impossible"
-    isHorizontal ((x1, _), (x2, _)) = x1 == x2
-    isVertical ((_, y1), (_, y2))   = y1 == y2
-    crossingIndices = map (,'+') $ mapMaybe (uncurry getCrossing) $ allSegmentPairs path
-    -- TODO this is wrong
-    getCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
-      | x1 == x2 && y3 == y4 = Just (x1, y3)
-      | x3 == x4 && y1 == y2 = Just (x3, y1)
-      | otherwise            = Nothing
+    turnIndices = map (second cornerChar) $ mapMaybe (uncurry segmentCornerType) $ allSegmentPairs path
+    crossingIndices = map (,'+') $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
 
--- picturizePath :: Path -> IO Picture
--- picturizePath path = do
---   tTil <- terrainTiles
---   return $ drawTerrain $ map (\(x, y) -> (x, y, roadHorizontal tTil)) path
+picturizePath :: Path -> IO Picture
+picturizePath path = do
+  tTil <- terrainTiles
+  return $ drawTerrain $ Terrain $ map (\(x, y) -> (x, y, roadHorizontal tTil)) path
 
     
 -- TODO
 genRandomPath :: IO Path
-genRandomPath = do
-  n <- randomRIO intermediatePointRange
-  xs <- genRandomPoints n
-  (start, end) <- genStartEndPoints
-  return $ start : xs ++ [end]
+genRandomPath = head <$> M.until (not . null) genRandomPaths
+  where
+    genRandomPaths = do
+      n <- randomRIO intermediatePointRange
+      xs <- genRandomPoints n
+      (start, end) <- genStartEndPoints
+      return $ filter isValidPath $ createAllPaths $ start : xs ++ [end]

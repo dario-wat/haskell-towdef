@@ -140,7 +140,7 @@ debugGridPath path = Grid $ unGrid emptyGrid // zip path ['a'..]
 debugPath :: IO ()
 debugPath = do
   (startPoint, endPoint) <- genStartEndPoints
-  middlePoints <- genRandomPoints 5
+  middlePoints <- genRandomPoints 2
   let points = startPoint : middlePoints ++ [endPoint]
   putStrLn "\nPoints:"
   putStrLn $ gridArrayStr $ debugGridPath points
@@ -155,5 +155,6 @@ debugPath = do
   -- putStrLn "\nValid paths:"
   -- printGrids $ filter isValidPath $ createAllPaths points
   putStrLn "\nValid path:"
+  path <- genRandomPath
   putStrLn $ gridArrayStr $ gridifyPath $ head $ filter isValidPath $ createAllPaths points
   where printGrids = putStrLn . gridArraysStr . map debugGridPath
