@@ -8,20 +8,30 @@ module Lib.Path
   , connectAllPoints
   , createAllPaths
   , isValidPath
+  , gridifyPath
   , segmentsOverlap
+  , picturizePath
   , Path
   , Point
   ) where
 
-import Lib.Grid (gridCols, gridRows)
+import Lib.Grid (gridCols, gridRows, GridArray, emtpyGrid)
 import System.Random (randomRIO)
 import Data.List (group)
+import Lib.Util (cartProd, manhattanDist)
+import Graphics.Gloss (Picture)
+import GameObjects.Terrain (terrainTiles, drawTerrain, TerrainTiles (roadHorizontal))
+import Data.Array ((//))
+import Data.Maybe (mapMaybe)
 
 type Point = (Int, Int)
 type Path = [Point]
 
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
+
+pathLengthRange :: (Int, Int)
+pathLengthRange = (30, 70)
 
 genRandomPoint :: IO Point
 genRandomPoint = do
@@ -87,6 +97,16 @@ createAllPaths :: [Point] -> [Path]
 createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoints
   where removeConsecutiveDuplicates = map head . group
 
+pathSegments :: Path -> [(Point, Point)]
+pathSegments path = zip path (tail path)
+
+allSegmentPairs :: Path -> [((Point, Point), (Point, Point))]
+allSegmentPairs path = filter (uncurry (/=)) $ cartProd allSegments allSegments
+  where allSegments = pathSegments path
+
+pathLength :: Path -> Int
+pathLength = sum . map (uncurry manhattanDist) . pathSegments
+
 -- | Checks whether two path segments overlap
 segmentsOverlap :: (Point, Point) -> (Point, Point) -> Bool
 segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
@@ -108,15 +128,40 @@ segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
 --       but can cross perpendicularly
 --    3. 
 isValidPath :: Path -> Bool
-isValidPath [] = False
-isValidPath [_] = False
-isValidPath path = (not . any (uncurry segmentsOverlap)) allSegmentPairs
-  where
-    allSegments = zip path (tail path)
-    allSegmentPairs = filter (uncurry (/=)) $ cartProd allSegments allSegments
-    cartProd xs ys = [(x,y) | x <- xs, y <- ys]
-    
+isValidPath []   = False
+isValidPath [_]  = False
+isValidPath path = 
+  (not . any (uncurry segmentsOverlap)) (allSegmentPairs path)
+  && pathLength path >= fst pathLengthRange
+  && pathLength path <= snd pathLengthRange
 
+-- | Turns a path into a grid. The path has to be valid.
+gridifyPath :: Path -> GridArray
+gridifyPath path = emtpyGrid // pathIndices // turnIndices // crossingIndices
+  where 
+    pathIndices = concatMap markGrid $ pathSegments path
+    markGrid ((x1, y1), (x2, y2))
+      | x1 == x2  = [((x1, y), '|') | y <- [min y1 y2 .. max y1 y2]]
+      | y1 == y2  = [((x, y1), '_') | x <- [min x1 x2 .. max x1 x2]]
+      | otherwise = error "gridifyPath: impossible"
+    turnIndices = map (\s@(a, _) -> (a, turnType s)) $ pathSegments path
+    turnType ((x1, y1), (x2, y2))
+      | x1 == x2  = if y1 < y2 then 'v' else '^'
+      | y1 == y2  = if x1 < x2 then '>' else '<'
+      | otherwise = error "gridifyPath: impossible"
+    crossingIndices = map (,'+') $ mapMaybe (uncurry getCrossing) $ allSegmentPairs path
+    -- TODO this is wrong
+    getCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
+      | x1 == x2 && y3 == y4 = Just (x1, y3)
+      | x3 == x4 && y1 == y2 = Just (x3, y1)
+      | otherwise            = Nothing
+
+picturizePath :: Path -> IO Picture
+picturizePath path = do
+  tTil <- terrainTiles
+  return $ drawTerrain $ map (\(x, y) -> (x, y, roadHorizontal tTil)) path
+
+    
 -- TODO
 genRandomPath :: IO Path
 genRandomPath = do

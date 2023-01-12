@@ -18,7 +18,7 @@ import Codec.Picture (DynamicImage, convertRGBA8)
 import Codec.Picture.Extra (crop)
 import Graphics.Gloss (Picture, pictures, translate)
 import Const (spriteWidth, spriteHeight)
-import Lib.Grid (gridRows, gridCols, gridCenterOf)
+import Lib.Grid (gridCenterOf)
 import Data.Tuple.HT (uncurry3)
 
 data Tile = Tile 
@@ -53,7 +53,7 @@ cropTiles r c w h img = Tile (fromImageRGBA8 $ cropFn $ convertRGBA8 img) w h
 -- tile is 3x3, the given row and column will be the coordinates of the grid
 -- where the bottom left cell will be drawn.
 drawTile :: Int -> Int -> Tile -> Picture
-drawTile x y (Tile picture w h) = translate xc yc picture
+drawTile x y (Tile pic w h) = translate xc yc pic
   where (xc, yc) = gridCenterOf (x, y) (w, h)
 
 drawTerrain :: Terrain -> Picture

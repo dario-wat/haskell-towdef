@@ -13,7 +13,7 @@ import Data.Maybe (isNothing)
 import Lib.Animation (repeatingAnimation, drawingAnimation)
 import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
-import Lib.Path (genRandomPath, genRandomPoints)
+import Lib.Path (genRandomPath, genRandomPoints, picturizePath)
 import Lib.Grid (emtpyGrid, gridArrayStr, gridArraysStr)
 import Data.Array (Array, listArray, assocs, ixmap, elems, (//))
 
@@ -54,6 +54,8 @@ main = do
   fb <- readPngOrError "assets/firebug.png"
   gs <- mkGameState
   drTer <- debugExampleTerrain
+  path <- genRandomPath
+  pathPic <- picturizePath path
   -- putStrLn . show =<< genRandomPoints 100
   -- print gridArray
   -- rs <- genRandomPoints 20
@@ -82,6 +84,6 @@ main = do
     60
     gs 
     -- (picturing (\w -> S.draw $ bug w))
-    (picturing $ const $ pictures [drTer, debugGrid])
+    (picturing $ const $ pictures [pathPic])
     (\_ _ -> id) 
     [\_ _ (GameState anim anim2 bug) -> GameState {bug = S.update bug}]

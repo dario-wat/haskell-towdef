@@ -18,7 +18,7 @@ import qualified GameObjects.Terrain as T
 import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, gridArraysStr, gridArrayStr, emtpyGrid, GridArray)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
-import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath)
+import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath, gridifyPath, genRandomPath)
 import Data.Array ((//))
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
@@ -142,23 +142,23 @@ debugExampleTerrain = do
   let 
     --grassField = pictures [T.drawTile x y $ T.grass tTil | x <- [0..gridCols-1], y <- [0..gridRows-1]]
     terrainTiles = 
-      [ (0, 0, T.roadTopLeft tTil)
-      , (2, 1, T.roadBottomRight tTil)
-      , (3, 3, T.roadVertical tTil)
-      , (3, 4, T.roadVertical tTil)
-      , (3, 5, T.roadVertical tTil)
-      , (3, 6, T.roadTopLeftSharp tTil)
-      , (4, 6, T.roadHorizontal tTil)
-      , (5, 6, T.roadHorizontal tTil)
-      , (6, 6, T.roadHorizontal tTil)
-      , (7, 6, T.roadCrossing tTil)
-      , (7, 4, T.roadBottomLeft tTil)
-      , (8, 6, T.roadHorizontal tTil)
-      , (9, 6, T.roadHorizontal tTil)
+      [ ( 0, 0, T.roadTopLeft tTil)
+      , ( 2, 1, T.roadBottomRight tTil)
+      , ( 3, 3, T.roadVertical tTil)
+      , ( 3, 4, T.roadVertical tTil)
+      , ( 3, 5, T.roadVertical tTil)
+      , ( 3, 6, T.roadTopLeftSharp tTil)
+      , ( 4, 6, T.roadHorizontal tTil)
+      , ( 5, 6, T.roadHorizontal tTil)
+      , ( 6, 6, T.roadHorizontal tTil)
+      , ( 7, 6, T.roadCrossing tTil)
+      , ( 7, 4, T.roadBottomLeft tTil)
+      , ( 8, 6, T.roadHorizontal tTil)
+      , ( 9, 6, T.roadHorizontal tTil)
       , (10, 6, T.horizontalBridge tObj)
-      , (9, 4, T.roadTopRightSharp tTil)
-      , (9, 3, T.roadBottomRightSharp tTil)
-      , (8, 3, T.roadHorizontal tTil)
+      , ( 9, 4, T.roadTopRightSharp tTil)
+      , ( 9, 3, T.roadBottomRightSharp tTil)
+      , ( 8, 3, T.roadHorizontal tTil)
       ]
   return $ T.drawTerrain terrainTiles
 
@@ -168,17 +168,20 @@ debugGridPath path = emtpyGrid // zip path ['a'..]
 debugPath :: IO ()
 debugPath = do
   (startPoint, endPoint) <- genStartEndPoints
-  middlePoints <- genRandomPoints 1
+  middlePoints <- genRandomPoints 5
   let points = startPoint : middlePoints ++ [endPoint]
   putStrLn "\nPoints:"
   putStrLn $ gridArrayStr $ debugGridPath points
   -- putStrLn "\nConnect 2 points:"
-  -- putStrLn $ gridArraysStr $ map debugGridPath $ connectTwoPoints (head points) (points !! 1)
+  -- printGrids $ connectTwoPoints (head points) (points !! 1)
   -- putStrLn "\nConnect all points:"
-  -- putStrLn $ gridArraysStr $ map debugGridPath $ concat $ connectAllPoints points
+  -- printGrids $ concat $ connectAllPoints points
   -- putStrLn "\nPaths:"
-  -- putStrLn . gridArraysStr . map debugGridPath $ createAllPaths points
+  -- printGrids $ createAllPaths points
   -- putStrLn "\nInvalid paths:"
-  -- putStrLn . gridArraysStr . map debugGridPath $ filter (not . isValidPath) $ createAllPaths points
-  putStrLn "\nValid paths:"
-  putStrLn . gridArraysStr . map debugGridPath $ filter isValidPath $ createAllPaths points
+  -- printGrids $ filter (not . isValidPath) $ createAllPaths points
+  -- putStrLn "\nValid paths:"
+  -- printGrids $ filter isValidPath $ createAllPaths points
+  putStrLn "\nValid path:"
+  putStrLn $ gridArrayStr $ gridifyPath $ head $ filter isValidPath $ createAllPaths points
+  where printGrids = putStrLn . gridArraysStr . map debugGridPath

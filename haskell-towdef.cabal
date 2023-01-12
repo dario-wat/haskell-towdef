@@ -35,6 +35,7 @@ library
       Lib.Image
       Lib.Path
       Lib.Spritesheet
+      Lib.Util
       Lib.Window
       ThirdParty.GraphicsGlossGame
       ThirdParty.GraphicsGlossJuicy
