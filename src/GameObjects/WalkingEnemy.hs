@@ -6,6 +6,7 @@ module GameObjects.WalkingEnemy
   ) where
 
 -- TODO
+-- WIP
 -- 1. data type should be generic for all walking enemies
 
 import Lib.Image (readPngOrError, cropFrame, cropFrameAndFlip)

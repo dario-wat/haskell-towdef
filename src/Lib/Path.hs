@@ -20,7 +20,7 @@ module Lib.Path
 -- 1. Make unused functions private (remove from module export)
 
 
-import Lib.Grid (gridCols, gridRows, GridArray, emtpyGrid)
+import Lib.Grid (gridCols, gridRows, Grid(..), emptyGrid)
 import System.Random (randomRIO)
 import Data.List (group)
 import Lib.Util (cartProd, manhattanDist)
@@ -141,8 +141,8 @@ isValidPath path =
   && pathLength path <= snd pathLengthRange
 
 -- | Turns a path into a grid. The path has to be valid.
-gridifyPath :: Path -> GridArray
-gridifyPath path = emtpyGrid // pathIndices // turnIndices // crossingIndices
+gridifyPath :: Path -> Grid
+gridifyPath path = Grid $ unGrid emptyGrid // pathIndices // turnIndices // crossingIndices
   where 
     pathIndices = concatMap markGrid $ pathSegments path
     markGrid ((x1, y1), (x2, y2))

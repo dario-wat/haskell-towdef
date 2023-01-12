@@ -14,7 +14,6 @@ import Lib.Animation (repeatingAnimation, drawingAnimation)
 import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
 import Lib.Path (genRandomPath, genRandomPoints)
-import Lib.Grid (emtpyGrid)
 import Data.Array (Array, listArray, assocs, ixmap, elems, (//))
 
 data GameState = GameState

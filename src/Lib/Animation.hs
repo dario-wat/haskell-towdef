@@ -5,6 +5,8 @@ module Lib.Animation
   , MkAnimation
   ) where
 
+-- TOO WIP
+
 import ThirdParty.GraphicsGlossGame (Animation, animationPicture, translating, animating, blank, Scene, noAnimation)
 import Data.Maybe (isNothing)
 

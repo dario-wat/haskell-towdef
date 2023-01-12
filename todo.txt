@@ -9,3 +9,4 @@
 - Generate path
 - Generate terraine from the path
 - Mapping module
+- Remove useless debug code

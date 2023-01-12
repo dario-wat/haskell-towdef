@@ -5,7 +5,6 @@ module Debug
   , debugTerrain
   , debugPoint
   , debugPointWithCoords
-  , debugGrid
   , debugExampleTerrain
   , debugPath
   , gridArrayStr
@@ -17,7 +16,7 @@ import Lib.Image (readPngOrError)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, emtpyGrid, GridArray)
+import Lib.Grid (Grid(..), emptyGrid, gridRows, gridArrayStr, gridArraysStr)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
 import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath, gridifyPath, genRandomPath)
@@ -128,16 +127,7 @@ debugTerrain = do
     , mkStaticSprite    180    300 $ T.picture $ T.grass tTil
     ]
 
-debugGrid :: G.Picture
-debugGrid = G.pictures [vLines, hLines, vNumbers, hNumbers]
-  where
-    (endX, endY) = (gridStartX + gridWidth, gridStartY + gridHeight)
-    gLines = G.pictures . map G.line
-    vLines = gLines [[(gridX x, gridStartY), (gridX x, endY)] | x <- [0..gridCols]]
-    hLines = gLines [[(gridStartX, gridY y), (endX, gridY y)] | y <- [0..gridRows]]
-    text = G.scale 0.1 0.1 . G.text . show
-    vNumbers = G.pictures [G.translate (gridX x + 20) (endY + 16) $ text x | x <- [0..gridCols-1]]
-    hNumbers = G.pictures [G.translate (gridStartX - 20) (gridY y + 20) $ text y | y <- [0..gridRows-1]]
+
 
 debugExampleTerrain :: IO G.Picture
 debugExampleTerrain = do
@@ -166,14 +156,8 @@ debugExampleTerrain = do
       ]
   return $ T.drawTerrain terrainTiles
 
-gridArrayStr :: GridArray -> String
-gridArrayStr = intercalate "\n" . sliceHorizontal gridRows . elems
-
-gridArraysStr :: [GridArray] -> String
-gridArraysStr = intercalate "\n\n" . map gridArrayStr
-
-debugGridPath :: Path -> GridArray
-debugGridPath path = emtpyGrid // zip path ['a'..]
+debugGridPath :: Path -> Grid
+debugGridPath path = Grid $ unGrid emptyGrid // zip path ['a'..]
 
 debugPath :: IO ()
 debugPath = do
