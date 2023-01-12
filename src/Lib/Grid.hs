@@ -65,9 +65,3 @@ gridCenterOf (x, y) (w, h) = (centerX, centerY)
 
 emtpyGrid :: GridArray
 emtpyGrid = listArray ((0, 0), (gridCols - 1, gridRows - 1)) $ repeat '.'
-
-gridArrayStr :: GridArray -> String
-gridArrayStr = intercalate "\n" . sliceHorizontal gridRows . elems
-
-gridArraysStr :: [GridArray] -> String
-gridArraysStr = intercalate "\n\n" . map gridArrayStr

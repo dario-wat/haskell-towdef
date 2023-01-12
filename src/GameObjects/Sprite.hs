@@ -10,6 +10,8 @@ module GameObjects.Sprite
   , Sprite(..)
   ) where
 
+-- TODO WIP
+
 import Graphics.Gloss (Picture, translate, blank)
 import Lib.Animation (MkAnimation, mkNoAnimation)
 

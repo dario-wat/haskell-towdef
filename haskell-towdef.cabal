@@ -33,6 +33,7 @@ library
       Lib.Animation
       Lib.Grid
       Lib.Image
+      Lib.MapGenerator
       Lib.Path
       Lib.Spritesheet
       Lib.Util

@@ -8,6 +8,8 @@ module Debug
   , debugGrid
   , debugExampleTerrain
   , debugPath
+  , gridArrayStr
+  , gridArraysStr
   ) where
 
 import qualified Graphics.Gloss as G
@@ -15,11 +17,13 @@ import Lib.Image (readPngOrError)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, gridArraysStr, gridArrayStr, emtpyGrid, GridArray)
+import Lib.Grid (gridWidth, gridHeight, gridX, gridY, gridX, gridY, gridRows, gridCols, gridStartY, gridStartX, emtpyGrid, GridArray)
 import Graphics.Gloss (Picture, pictures, rectangleWire)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
 import Lib.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath, gridifyPath, genRandomPath)
-import Data.Array ((//))
+import Data.Array ((//), elems)
+import Data.List (intercalate)
+import Data.List.HT (sliceHorizontal)
 
 -- Draw a rectangle with a border of given thickness. Complexity is O(n) where
 -- n is the thickness so we shouldn't use this with high numbers
@@ -141,7 +145,7 @@ debugExampleTerrain = do
   tObj <- T.terrainObjects
   let 
     --grassField = pictures [T.drawTile x y $ T.grass tTil | x <- [0..gridCols-1], y <- [0..gridRows-1]]
-    terrainTiles = 
+    terrainTiles = T.Terrain
       [ ( 0, 0, T.roadTopLeft tTil)
       , ( 2, 1, T.roadBottomRight tTil)
       , ( 3, 3, T.roadVertical tTil)
@@ -161,6 +165,12 @@ debugExampleTerrain = do
       , ( 8, 3, T.roadHorizontal tTil)
       ]
   return $ T.drawTerrain terrainTiles
+
+gridArrayStr :: GridArray -> String
+gridArrayStr = intercalate "\n" . sliceHorizontal gridRows . elems
+
+gridArraysStr :: [GridArray] -> String
+gridArraysStr = intercalate "\n\n" . map gridArrayStr
 
 debugGridPath :: Path -> GridArray
 debugGridPath path = emtpyGrid // zip path ['a'..]

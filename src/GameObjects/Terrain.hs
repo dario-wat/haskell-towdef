@@ -1,15 +1,11 @@
 module GameObjects.Terrain
-  ( cropTile
-  , cropTiles
-  , readTerrainImage
-  , terrainObjects
-  , terrainTiles
-  , drawTile
-  , drawTerrain
-  , Tile(..)
-  , Terrain
+  ( Tile(..)
+  , Terrain(..)
   , TerrainObjects(..)
   , TerrainTiles(..)
+  , terrainObjects
+  , terrainTiles
+  , drawTerrain
   ) where
 
 import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
@@ -22,12 +18,16 @@ import Lib.Grid (gridCenterOf)
 import Data.Tuple.HT (uncurry3)
 
 data Tile = Tile 
-  { picture :: Picture
-  , width   :: Int
-  , height  :: Int
-  }
+  { picture :: !Picture
+  , width   :: !Int
+  , height  :: !Int
+  } 
+  deriving (Show, Eq)
 
-type Terrain = [(Int, Int, Tile)]
+newtype Terrain = Terrain 
+  { unTerrain :: [(Int, Int, Tile)] 
+  }
+  deriving (Show, Eq)
 
 tileWidth :: Int
 tileWidth = spriteWidth
@@ -57,33 +57,33 @@ drawTile x y (Tile pic w h) = translate xc yc pic
   where (xc, yc) = gridCenterOf (x, y) (w, h)
 
 drawTerrain :: Terrain -> Picture
-drawTerrain = pictures . map (uncurry3 drawTile)
+drawTerrain = pictures . map (uncurry3 drawTile) . unTerrain
 
 data TerrainObjects = TerrainObjects
-  { horizontalBridge    :: Tile
-  , verticalBridge      :: Tile
-  , greenTree1          :: Tile
-  , greenTree2          :: Tile
-  , greenTree3          :: Tile
-  , greenTree4          :: Tile
-  , brownTree1          :: Tile
-  , brownTree2          :: Tile
-  , brownTree3          :: Tile
-  , brownTree4          :: Tile
-  , rock1               :: Tile
-  , rock2               :: Tile
-  , rock3               :: Tile
-  , rock4               :: Tile
-  , bush1               :: Tile
-  , bush2               :: Tile
-  , rockWallDown        :: Tile
-  , rockWallUp          :: Tile
-  , rockWallLeft        :: Tile
-  , rockWallRight       :: Tile
-  , rockWallTopLeft     :: Tile
-  , rockWallTopRight    :: Tile
-  , rockWallBottomLeft  :: Tile
-  , rockWallBottomRight :: Tile
+  { horizontalBridge    :: !Tile
+  , verticalBridge      :: !Tile
+  , greenTree1          :: !Tile
+  , greenTree2          :: !Tile
+  , greenTree3          :: !Tile
+  , greenTree4          :: !Tile
+  , brownTree1          :: !Tile
+  , brownTree2          :: !Tile
+  , brownTree3          :: !Tile
+  , brownTree4          :: !Tile
+  , rock1               :: !Tile
+  , rock2               :: !Tile
+  , rock3               :: !Tile
+  , rock4               :: !Tile
+  , bush1               :: !Tile
+  , bush2               :: !Tile
+  , rockWallDown        :: !Tile
+  , rockWallUp          :: !Tile
+  , rockWallLeft        :: !Tile
+  , rockWallRight       :: !Tile
+  , rockWallTopLeft     :: !Tile
+  , rockWallTopRight    :: !Tile
+  , rockWallBottomLeft  :: !Tile
+  , rockWallBottomRight :: !Tile
   }
 
 terrainObjects :: IO TerrainObjects
@@ -117,18 +117,18 @@ terrainObjects = do
     }
 
 data TerrainTiles = TerrainTiles
-  { roadCrossing         :: Tile
-  , roadTopLeft          :: Tile
-  , roadTopRight         :: Tile
-  , roadBottomLeft       :: Tile
-  , roadBottomRight      :: Tile
-  , roadTopLeftSharp     :: Tile
-  , roadTopRightSharp    :: Tile
-  , roadBottomLeftSharp  :: Tile
-  , roadBottomRightSharp :: Tile
-  , grass                :: Tile
-  , roadVertical         :: Tile
-  , roadHorizontal       :: Tile
+  { roadCrossing         :: !Tile
+  , roadTopLeft          :: !Tile
+  , roadTopRight         :: !Tile
+  , roadBottomLeft       :: !Tile
+  , roadBottomRight      :: !Tile
+  , roadTopLeftSharp     :: !Tile
+  , roadTopRightSharp    :: !Tile
+  , roadBottomLeftSharp  :: !Tile
+  , roadBottomRightSharp :: !Tile
+  , grass                :: !Tile
+  , roadVertical         :: !Tile
+  , roadHorizontal       :: !Tile
   }
 
 terrainTiles :: IO TerrainTiles

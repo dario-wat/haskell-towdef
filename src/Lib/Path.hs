@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TupleSections #-}
 
 module Lib.Path 
@@ -10,10 +11,14 @@ module Lib.Path
   , isValidPath
   , gridifyPath
   , segmentsOverlap
-  , picturizePath
+  -- , picturizePath
   , Path
   , Point
   ) where
+
+-- TODO
+-- 1. Make unused functions private (remove from module export)
+
 
 import Lib.Grid (gridCols, gridRows, GridArray, emtpyGrid)
 import System.Random (randomRIO)
@@ -88,9 +93,9 @@ combinePaths :: [[Path]] -> [Path]
 combinePaths = combinePathsAcc [[]]
 
 combinePathsAcc :: [Path] -> [[Path]] -> [Path]
-combinePathsAcc acc []           = acc
-combinePathsAcc acc ([p]:ps)     = combinePathsAcc (map (++p) acc) ps
-combinePathsAcc acc ([p1,p2]:ps) = combinePathsAcc (map (++p1) acc ++ map (++p2) acc) ps
+combinePathsAcc !acc []           = acc
+combinePathsAcc !acc ([p]:ps)     = combinePathsAcc (map (++p) acc) ps
+combinePathsAcc !acc ([p1,p2]:ps) = combinePathsAcc (map (++p1) acc ++ map (++p2) acc) ps
 combinePathsAcc _   _            = error "combinePathsAcc: impossible"
 
 createAllPaths :: [Point] -> [Path]
@@ -126,7 +131,7 @@ segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
 --    1. Has to have at least two points
 --    2. Paths cannot overlap vertically or horizontally, 
 --       but can cross perpendicularly
---    3. 
+--    3. TODO
 isValidPath :: Path -> Bool
 isValidPath []   = False
 isValidPath [_]  = False
@@ -149,6 +154,8 @@ gridifyPath path = emtpyGrid // pathIndices // turnIndices // crossingIndices
       | x1 == x2  = if y1 < y2 then 'v' else '^'
       | y1 == y2  = if x1 < x2 then '>' else '<'
       | otherwise = error "gridifyPath: impossible"
+    isHorizontal ((x1, _), (x2, _)) = x1 == x2
+    isVertical ((_, y1), (_, y2))   = y1 == y2
     crossingIndices = map (,'+') $ mapMaybe (uncurry getCrossing) $ allSegmentPairs path
     -- TODO this is wrong
     getCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
@@ -156,10 +163,10 @@ gridifyPath path = emtpyGrid // pathIndices // turnIndices // crossingIndices
       | x3 == x4 && y1 == y2 = Just (x3, y1)
       | otherwise            = Nothing
 
-picturizePath :: Path -> IO Picture
-picturizePath path = do
-  tTil <- terrainTiles
-  return $ drawTerrain $ map (\(x, y) -> (x, y, roadHorizontal tTil)) path
+-- picturizePath :: Path -> IO Picture
+-- picturizePath path = do
+--   tTil <- terrainTiles
+--   return $ drawTerrain $ map (\(x, y) -> (x, y, roadHorizontal tTil)) path
 
     
 -- TODO

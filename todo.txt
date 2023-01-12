@@ -8,3 +8,4 @@
 - Water
 - Generate path
 - Generate terraine from the path
+- Mapping module

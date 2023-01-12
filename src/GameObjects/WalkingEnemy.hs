@@ -5,6 +5,9 @@ module GameObjects.WalkingEnemy
   , WalkingEnemyAnimations(..)
   ) where
 
+-- TODO
+-- 1. data type should be generic for all walking enemies
+
 import Lib.Image (readPngOrError, cropFrame, cropFrameAndFlip)
 import Lib.Animation (MkAnimation)
 import Codec.Picture (DynamicImage)
