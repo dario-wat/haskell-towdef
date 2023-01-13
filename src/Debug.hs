@@ -6,7 +6,6 @@ module Debug
   , debugPoint
   , debugPointWithCoords
   , debugExampleTerrain
-  , debugPath
   , gridArrayStr
   , gridArraysStr
   ) where
@@ -20,8 +19,8 @@ import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
 import Lib.Level.Grid (Grid(..), emptyGrid, gridArrayStr, gridArraysStr)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
-import Lib.Level.Path (genRandomPoints, connectTwoPoints, Path, connectAllPoints, createAllPaths, genStartEndPoints, isValidPath, gridifyPath, genRandomPath)
 import Data.Array ((//))
+import Lib.Level.MapGenerator (addPathToGrid)
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
 debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ boundingBox tile
@@ -133,28 +132,3 @@ debugExampleTerrain = do
       , ( 8, 3, T.roadHorizontal tTil)
       ]
   return $ T.drawTerrain terrainTiles
-
-debugGridPath :: Path -> Grid
-debugGridPath path = Grid $ unGrid emptyGrid // zip path ['a'..]
-
-debugPath :: IO ()
-debugPath = do
-  (startPoint, endPoint) <- genStartEndPoints
-  middlePoints <- genRandomPoints 2
-  let points = startPoint : middlePoints ++ [endPoint]
-  putStrLn "\nPoints:"
-  putStrLn $ gridArrayStr $ debugGridPath points
-  -- putStrLn "\nConnect 2 points:"
-  -- printGrids $ connectTwoPoints (head points) (points !! 1)
-  -- putStrLn "\nConnect all points:"
-  -- printGrids $ concat $ connectAllPoints points
-  -- putStrLn "\nPaths:"
-  -- printGrids $ createAllPaths points
-  -- putStrLn "\nInvalid paths:"
-  -- printGrids $ filter (not . isValidPath) $ createAllPaths points
-  -- putStrLn "\nValid paths:"
-  -- printGrids $ filter isValidPath $ createAllPaths points
-  putStrLn "\nValid path:"
-  path <- genRandomPath
-  putStrLn $ gridArrayStr $ gridifyPath $ head $ filter isValidPath $ createAllPaths points
-  where printGrids = putStrLn . gridArraysStr . map debugGridPath

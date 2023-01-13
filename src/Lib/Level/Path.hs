@@ -3,33 +3,26 @@
 
 module Lib.Level.Path 
   ( genRandomPath
-  , genRandomPoints
-  , genStartEndPoints
-  , connectTwoPoints
-  , connectAllPoints
-  , createAllPaths
-  , isValidPath
-  , gridifyPath
-  , segmentsOverlap
-  , picturizePath
+  , segmentOverlap
+  , segmentCrossing
+  , segmentCornerType
+  , pathSegments
+  , allSegmentPairs
+  , cornerChar
+  , pathLength
   , Path
   , Point
   ) where
 
--- TODO
--- 1. Make unused functions private (remove from module export)
+-- TODO WIP
 
-
-import Lib.Level.Grid (gridCols, gridRows, Grid(..), emptyGrid)
+import Lib.Level.Grid (gridCols, gridRows)
 import System.Random (randomRIO)
 import Data.List (group)
 import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl)
-import Graphics.Gloss (Picture)
-import GameObjects.Terrain (terrainTiles, drawTerrain, TerrainTiles (roadHorizontal), Terrain (Terrain))
-import Data.Array ((//))
-import Data.Maybe (mapMaybe, isJust, fromJust)
 import qualified Control.Monad.HT as M (until)
-import Data.Bifunctor (Bifunctor(second))
+import Data.Ix (Ix(inRange))
+
 
 type Point = (Int, Int)
 type Path = [Point]
@@ -49,6 +42,34 @@ intermediatePointRange = (3, 5)
 
 pathLengthRange :: (Int, Int)
 pathLengthRange = (30, 70)
+
+crossingCountRange :: (Int, Int)
+crossingCountRange = (0, 2)
+
+-- | Checks whether a path is valid. Validity is a broad term in this case
+-- and it also includes path preferences such as path length.
+-- Validity requirements:
+--    1. Has to have at least two points
+--    2. Paths cannot overlap vertically or horizontally, 
+--       but can cross perpendicularly
+--    3. Path length has to be within the specified range
+isValidPath :: Path -> Bool
+isValidPath []   = False
+isValidPath [_]  = False
+isValidPath path = 
+  (not . any (uncurry segmentOverlap)) (allSegmentPairs path)
+  && inRange pathLengthRange (pathLength path)
+  -- && inRange crossingCountRange ()
+    
+-- | Generates a single random path that satisfies all validity requirements.
+genRandomPath :: IO Path
+genRandomPath = head <$> M.until (not . null) genRandomPaths
+  where
+    genRandomPaths = do
+      n <- randomRIO intermediatePointRange
+      points <- genRandomPoints n
+      (start, end) <- genStartEndPoints
+      return $ filter isValidPath $ createAllPaths $ start : points ++ [end]
 
 genRandomPoint :: IO Point
 genRandomPoint = do
@@ -108,7 +129,7 @@ combinePathsAcc :: [Path] -> [[Path]] -> [Path]
 combinePathsAcc !acc []           = acc
 combinePathsAcc !acc ([p]:ps)     = combinePathsAcc (map (++p) acc) ps
 combinePathsAcc !acc ([p1,p2]:ps) = combinePathsAcc (map (++p1) acc ++ map (++p2) acc) ps
-combinePathsAcc _   _            = error "combinePathsAcc: impossible"
+combinePathsAcc _   _             = error "combinePathsAcc: impossible"
 
 createAllPaths :: [Point] -> [Path]
 createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoints
@@ -122,11 +143,11 @@ allSegmentPairs path = filter (uncurry (/=)) $ cartProd allSegments allSegments
   where allSegments = pathSegments path
 
 pathLength :: Path -> Int
-pathLength = sum . map (uncurry manhattanDist) . pathSegments
+pathLength = (+1) . sum . map (uncurry manhattanDist) . pathSegments
 
 -- | Checks whether two path segments overlap
-segmentsOverlap :: PathSegment -> PathSegment -> Bool
-segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
+segmentOverlap :: PathSegment -> PathSegment -> Bool
+segmentOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
   | all (== x1) [x2, x3, x4] = overlap y1 y2 y3 y4
   | all (== y1) [y2, y3, y4] = overlap x1 x2 x3 x4
   | otherwise                = False
@@ -138,12 +159,14 @@ segmentsOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
       | a2 <= b1  = False
       | otherwise = True
 
+-- | Finds a crossing point between two segments if there is one
 segmentCrossing :: PathSegment -> PathSegment -> Maybe Point
 segmentCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
   | x1 == x2 && y3 == y4 && inRangeAbsExcl (x3, x4) x1 && inRangeAbsExcl (y1, y2) y3 = Just (x1, y3)
   | x3 == x4 && y1 == y2 && inRangeAbsExcl (x1, x2) x3 && inRangeAbsExcl (y3, y4) y1 = Just (x3, y1)
   | otherwise = Nothing
 
+-- | Finds a corner between two segments if there is one
 segmentCornerType :: PathSegment -> PathSegment -> Maybe (Point, CornerType)
 segmentCornerType (a1, b1) (a2, b2)
   | a1 == a2 && b1 == b2 || a1 == b2 && b1 == a2 = Nothing
@@ -161,45 +184,3 @@ segmentCornerType (a1, b1) (a2, b2)
       | x1 == x2 && y1 < y2  = Just (p, DownRight)
       | x1 == x2 && y1 > y2  = Just (p, UpRight)
       | otherwise            = Nothing
-
--- | Checks whether a path is valid. That means it needs to satisfy 
--- the following conditions:
---    1. Has to have at least two points
---    2. Paths cannot overlap vertically or horizontally, 
---       but can cross perpendicularly
---    3. TODO
-isValidPath :: Path -> Bool
-isValidPath []   = False
-isValidPath [_]  = False
-isValidPath path = 
-  (not . any (uncurry segmentsOverlap)) (allSegmentPairs path)
-  && pathLength path >= fst pathLengthRange
-  && pathLength path <= snd pathLengthRange
-
--- | Turns a path into a grid. The path has to be valid.
-gridifyPath :: Path -> Grid
-gridifyPath path = Grid $ unGrid emptyGrid // pathIndices // turnIndices // crossingIndices
-  where 
-    pathIndices = concatMap markGrid $ pathSegments path
-    markGrid ((x1, y1), (x2, y2))
-      | x1 == x2  = [((x1, y), '|') | y <- [min y1 y2 .. max y1 y2]]
-      | y1 == y2  = [((x, y1), '_') | x <- [min x1 x2 .. max x1 x2]]
-      | otherwise = error "gridifyPath: impossible"
-    turnIndices = map (second cornerChar) $ mapMaybe (uncurry segmentCornerType) $ allSegmentPairs path
-    crossingIndices = map (,'+') $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
-
-picturizePath :: Path -> IO Picture
-picturizePath path = do
-  tTil <- terrainTiles
-  return $ drawTerrain $ Terrain $ map (\(x, y) -> (x, y, roadHorizontal tTil)) path
-
-    
--- TODO
-genRandomPath :: IO Path
-genRandomPath = head <$> M.until (not . null) genRandomPaths
-  where
-    genRandomPaths = do
-      n <- randomRIO intermediatePointRange
-      xs <- genRandomPoints n
-      (start, end) <- genStartEndPoints
-      return $ filter isValidPath $ createAllPaths $ start : xs ++ [end]
