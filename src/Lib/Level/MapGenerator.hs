@@ -1,8 +1,10 @@
 module Lib.Level.MapGenerator 
-  ( 
-  -- picturizePath
+  ( --generateMap
   ) where
 
+import qualified Graphics.Gloss as G
+
+-- generateMap :: IO G.Picture
 -- picturizeGrid :: Path -> IO G.Picture
 -- picturize path = do
 --   tTil <- terrainTiles

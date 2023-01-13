@@ -8,12 +8,12 @@ module Lib.Level.Path
 
 import System.Random (randomRIO)
 import Data.Array ((//))
-import Data.List (group)
-import Data.Maybe (mapMaybe)
-import qualified Control.Monad.HT as M (until)
 import Data.Ix (Ix(inRange))
+import Data.List (group)
+import Data.Maybe (mapMaybe, isJust)
+import qualified Control.Monad.HT as M (until)
 import Lib.Level.Grid (gridCols, gridRows, Grid(..))
-import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl)
+import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl, count)
 import qualified Lib.Level.TileType as TT
 
 type Point = (Int, Int)
@@ -40,9 +40,12 @@ isValidPath :: Path -> Bool
 isValidPath []   = False
 isValidPath [_]  = False
 isValidPath path = 
-  (not . any (uncurry segmentOverlap)) (allSegmentPairs path)
+  hasNoOverlap path
   && inRange pathLengthRange (pathLength path)
-  -- && inRange crossingCountRange ()
+  && inRange crossingCountRange (crossingCount path)
+  where
+    hasNoOverlap = not . any (uncurry segmentOverlap) . allSegmentPairs
+    crossingCount = count (isJust . uncurry segmentCrossing) . allSegmentPairs
     
 -- | Generates a single random path that satisfies all validity requirements.
 genRandomPath :: IO Path
@@ -65,6 +68,11 @@ addPathToGrid grid path = Grid $ unGrid grid // pathIndices // turnIndices // cr
     turnIndices = mapMaybe (uncurry segmentCornerType) $ allSegmentPairs path
     crossingIndices = 
       map (,TT.RoadCrossing) $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
+
+
+--------------------
+-- PRIVATE --
+--------------------
 
 genRandomPoint :: IO Point
 genRandomPoint = do
