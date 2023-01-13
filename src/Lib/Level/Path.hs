@@ -3,23 +3,16 @@
 
 module Lib.Level.Path 
   ( genRandomPath
-  , segmentOverlap
-  , segmentCrossing
-  , segmentCornerType
-  , pathSegments
-  , allSegmentPairs
-  , pathLength
-  , Path
-  , Point
+  , addPathToGrid
   ) where
 
--- TODO WIP
-
 import System.Random (randomRIO)
+import Data.Array ((//))
 import Data.List (group)
+import Data.Maybe (mapMaybe)
 import qualified Control.Monad.HT as M (until)
 import Data.Ix (Ix(inRange))
-import Lib.Level.Grid (gridCols, gridRows)
+import Lib.Level.Grid (gridCols, gridRows, Grid(..))
 import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl)
 import qualified Lib.Level.TileType as TT
 
@@ -60,6 +53,18 @@ genRandomPath = head <$> M.until (not . null) genRandomPaths
       points <- genRandomPoints n
       (start, end) <- genStartEndPoints
       return $ filter isValidPath $ createAllPaths $ start : points ++ [end]
+
+addPathToGrid :: Grid -> Path -> Grid
+addPathToGrid grid path = Grid $ unGrid grid // pathIndices // turnIndices // crossingIndices
+  where 
+    pathIndices = concatMap markGridRoads $ pathSegments path
+    markGridRoads ((x1, y1), (x2, y2))
+      | x1 == x2  = [((x1, y), TT.RoadVertical) | y <- [min y1 y2 .. max y1 y2]]
+      | y1 == y2  = [((x, y1), TT.RoadHorizontal) | x <- [min x1 x2 .. max x1 x2]]
+      | otherwise = error "gridifyPath: impossible"
+    turnIndices = mapMaybe (uncurry segmentCornerType) $ allSegmentPairs path
+    crossingIndices = 
+      map (,TT.RoadCrossing) $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
 
 genRandomPoint :: IO Point
 genRandomPoint = do

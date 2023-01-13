@@ -13,9 +13,8 @@ import Data.Maybe (isNothing)
 import Lib.Animation (repeatingAnimation, drawingAnimation)
 import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
-import Lib.Level.Path (genRandomPath)
+import Lib.Level.Path (genRandomPath, addPathToGrid)
 import Data.Array (Array, listArray, assocs, ixmap, elems, (//))
-import Lib.Level.MapGenerator (picturizePath, addPathToGrid)
 import Lib.Level.Grid (emptyGrid)
 
 data GameState = GameState
@@ -55,7 +54,7 @@ main = do
   gs <- mkGameState
   drTer <- debugExampleTerrain
   path <- genRandomPath
-  pathPic <- picturizePath path
+  -- pathPic <- picturizePath path
   -- putStrLn . show =<< genRandomPoints 100
   -- print gridArray
   -- rs <- genRandomPoints 20

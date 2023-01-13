@@ -20,7 +20,6 @@ import qualified GameObjects.Terrain as T
 import Lib.Level.Grid (Grid(..), emptyGrid, gridArrayStr, gridArraysStr)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
 import Data.Array ((//))
-import Lib.Level.MapGenerator (addPathToGrid)
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
 debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ boundingBox tile
