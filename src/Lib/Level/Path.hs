@@ -3,6 +3,7 @@
 
 module Lib.Level.Path 
   ( genRandomPath
+  , genRandomPoint
   , addPathToGrid
   ) where
 
@@ -20,11 +21,17 @@ type Point = (Int, Int)
 type Path = [Point]
 type PathSegment = (Point, Point)
 
+-- TODO
+-- not adjacent
+-- not cross at the edge
+-- not go across edges
+-- crossing doesnt work 100%
+
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
 
 pathLengthRange :: (Int, Int)
-pathLengthRange = (30, 70)
+pathLengthRange = (50, 110)
 
 crossingCountRange :: (Int, Int)
 crossingCountRange = (0, 2)
@@ -36,6 +43,8 @@ crossingCountRange = (0, 2)
 --    2. Paths cannot overlap vertically or horizontally, 
 --       but can cross perpendicularly
 --    3. Path length has to be within the specified range
+--    4. Path cannot have too many crossings
+--    5. Path cannot be on any of the edges
 isValidPath :: Path -> Bool
 isValidPath []   = False
 isValidPath [_]  = False
@@ -43,6 +52,7 @@ isValidPath path =
   hasNoOverlap path
   && inRange pathLengthRange (pathLength path)
   && inRange crossingCountRange (crossingCount path)
+  && (not . any segmentIsEdge) (pathSegments path)
   where
     hasNoOverlap = not . any (uncurry segmentOverlap) . allSegmentPairs
     crossingCount = count (isJust . uncurry segmentCrossing) . allSegmentPairs
@@ -69,16 +79,15 @@ addPathToGrid grid path = Grid $ unGrid grid // pathIndices // turnIndices // cr
     crossingIndices = 
       map (,TT.RoadCrossing) $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
 
-
---------------------
--- PRIVATE --
---------------------
-
 genRandomPoint :: IO Point
 genRandomPoint = do
   x <- randomRIO (0, gridCols - 1)
   y <- randomRIO (0, gridRows - 1)
   return (x, y)
+
+--------------------
+-- PRIVATE --
+--------------------
 
 -- | Generates a list of n unique random grid points
 genRandomPoints :: Int -> IO [Point]
@@ -187,3 +196,9 @@ segmentCornerType (a1, b1) (a2, b2)
       | x1 == x2 && y1 < y2  = Just (p, TT.RoadDownRight)
       | x1 == x2 && y1 > y2  = Just (p, TT.RoadUpRight)
       | otherwise            = Nothing
+
+segmentIsEdge :: PathSegment -> Bool
+segmentIsEdge ((x1, y1), (x2, y2)) = isVerticalEdge || isHorizontalEdge
+  where
+    isVerticalEdge = x1 == x2 && (x1 == 0 || x1 == gridCols - 1)
+    isHorizontalEdge = y1 == y2 && (y1 == 0 || y1 == gridRows - 1)

@@ -13,6 +13,8 @@ data TileType =
   | RoadDownRight
   | RoadCrossing
   | Grass
+  | GreenTree
+  | BrownTree
   deriving (Show, Eq)
 
 tileTypeChar :: TileType -> Char
@@ -25,4 +27,5 @@ tileTypeChar RoadDownLeft   = '┘'
 tileTypeChar RoadDownRight  = '└'
 tileTypeChar RoadCrossing   = '┼'
 tileTypeChar Grass          = '#'
-
+tileTypeChar GreenTree      = 'G'
+tileTypeChar BrownTree      = 'B'

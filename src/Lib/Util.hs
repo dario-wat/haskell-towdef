@@ -3,6 +3,7 @@ module Lib.Util
   , manhattanDist
   , inRangeAbs
   , inRangeAbsExcl
+  , inRangeF
   , count
   ) where
 
@@ -17,6 +18,9 @@ inRangeAbs (a, b) x = x >= min a b && x <= max a b
 
 inRangeAbsExcl :: (Int, Int) -> Int -> Bool
 inRangeAbsExcl (a, b) x = x > min a b && x < max a b
+
+inRangeF :: (Float, Float) -> Float -> Bool
+inRangeF (a, b) x = x >= min a b && x <= max a b
 
 count :: (a -> Bool) -> [a] -> Int
 count p = length . filter p
