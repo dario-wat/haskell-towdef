@@ -8,7 +8,6 @@ module Lib.Level.Path
   , segmentCornerType
   , pathSegments
   , allSegmentPairs
-  , cornerChar
   , pathLength
   , Path
   , Point
@@ -16,26 +15,17 @@ module Lib.Level.Path
 
 -- TODO WIP
 
-import Lib.Level.Grid (gridCols, gridRows)
 import System.Random (randomRIO)
 import Data.List (group)
-import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl)
 import qualified Control.Monad.HT as M (until)
 import Data.Ix (Ix(inRange))
-
+import Lib.Level.Grid (gridCols, gridRows)
+import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl)
+import qualified Lib.Level.TileType as TT
 
 type Point = (Int, Int)
 type Path = [Point]
 type PathSegment = (Point, Point)
-
-data CornerType = UpLeft | UpRight | DownLeft | DownRight
-  deriving (Show, Eq)
-
-cornerChar :: CornerType -> Char
-cornerChar UpLeft    = '┐'
-cornerChar UpRight   = '┌'
-cornerChar DownLeft  = '┘'
-cornerChar DownRight = '└'
 
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
@@ -167,7 +157,7 @@ segmentCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
   | otherwise = Nothing
 
 -- | Finds a corner between two segments if there is one
-segmentCornerType :: PathSegment -> PathSegment -> Maybe (Point, CornerType)
+segmentCornerType :: PathSegment -> PathSegment -> Maybe (Point, TT.TileType)
 segmentCornerType (a1, b1) (a2, b2)
   | a1 == a2 && b1 == b2 || a1 == b2 && b1 == a2 = Nothing
   | a1 == a2 = getCornerType b1 a1 b2
@@ -179,8 +169,8 @@ segmentCornerType (a1, b1) (a2, b2)
     getCornerType (x1, y1) p@(x2, y2) (x3, y3)
       | x1 == x3 || y1 == y3 = Nothing    -- Not a corner (straight line)
       | x1 > x3              = getCornerType (x3, y3) (x2, y2) (x1, y1)
-      | x1 < x2  && y3 > y2  = Just (p, UpLeft)
-      | x1 < x2  && y3 < y2  = Just (p, DownLeft)
-      | x1 == x2 && y1 < y2  = Just (p, DownRight)
-      | x1 == x2 && y1 > y2  = Just (p, UpRight)
+      | x1 < x2  && y3 > y2  = Just (p, TT.RoadUpLeft)
+      | x1 < x2  && y3 < y2  = Just (p, TT.RoadDownLeft)
+      | x1 == x2 && y1 < y2  = Just (p, TT.RoadDownRight)
+      | x1 == x2 && y1 > y2  = Just (p, TT.RoadUpRight)
       | otherwise            = Nothing

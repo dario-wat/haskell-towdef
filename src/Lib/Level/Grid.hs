@@ -10,14 +10,15 @@ module Lib.Level.Grid
   , gridArraysStr
   ) where
 
-import Lib.Window (windowWidth, windowHeight, x', y')
 import Data.Array (Array, listArray, elems)
 import Data.List.HT (sliceHorizontal)
 import Data.List (intercalate)
 import qualified Graphics.Gloss as G
+import Lib.Window (windowWidth, windowHeight, x', y')
+import Lib.Level.TileType (TileType(Empty), tileTypeChar)
 
 newtype Grid = Grid
-  { unGrid :: Array (Int, Int) Char
+  { unGrid :: Array (Int, Int) TileType
   }
   deriving (Show, Eq)
 
@@ -40,7 +41,7 @@ gridCenterOf (x, y) (w, h) = (centerX, centerY)
     centerY = gridY y + fromIntegral h * cellSize / 2
 
 emptyGrid :: Grid
-emptyGrid = Grid $ listArray ((0, 0), (gridCols - 1, gridRows - 1)) $ repeat '.'
+emptyGrid = Grid $ listArray ((0, 0), (gridCols - 1, gridRows - 1)) $ repeat Empty
 
 
 -- Following are private functions used for debugging or as helpers
@@ -90,7 +91,8 @@ debugGrid = G.pictures [vLines, hLines, vNumbers, hNumbers]
     hNumbers = G.pictures [G.translate (gridStartX - 20) (gridY y + 20) $ text y | y <- [0..gridRows-1]]
 
 gridArrayStr :: Grid -> String
-gridArrayStr = intercalate "\n" . sliceHorizontal gridRows . elems . unGrid
+gridArrayStr = 
+  intercalate "\n" . sliceHorizontal gridRows . map tileTypeChar . elems . unGrid
 
 gridArraysStr :: [Grid] -> String
 gridArraysStr = intercalate "\n\n" . map gridArrayStr
