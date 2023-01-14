@@ -27,6 +27,7 @@ dependencies:
 - JuicyPixels-extra
 - linear
 - random
+- random-shuffle
 - unordered-containers
 - utility-ht
 - vector

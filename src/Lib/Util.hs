@@ -5,7 +5,9 @@ module Lib.Util
   , inRangeAbsExcl
   , inRangeF
   , count
+  , chooseRandom
   ) where
+import System.Random.Shuffle (shuffleM)
 
 cartProd :: [a] -> [b] -> [(a, b)]
 cartProd xs ys = [(x,y) | x <- xs, y <- ys]
@@ -24,3 +26,6 @@ inRangeF (a, b) x = x >= min a b && x <= max a b
 
 count :: (a -> Bool) -> [a] -> Int
 count p = length . filter p
+
+chooseRandom :: Int -> [a] -> IO [a]
+chooseRandom n xs = take n <$> shuffleM xs

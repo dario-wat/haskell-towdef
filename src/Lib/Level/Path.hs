@@ -3,7 +3,6 @@
 
 module Lib.Level.Path 
   ( genRandomPath
-  , genRandomPoint
   , addPathToGrid
   ) where
 
@@ -79,15 +78,15 @@ addPathToGrid grid path = Grid $ unGrid grid // pathIndices // turnIndices // cr
     crossingIndices = 
       map (,TT.RoadCrossing) $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
 
+--------------------
+-- PRIVATE --
+--------------------
+
 genRandomPoint :: IO Point
 genRandomPoint = do
   x <- randomRIO (0, gridCols - 1)
   y <- randomRIO (0, gridRows - 1)
   return (x, y)
-
---------------------
--- PRIVATE --
---------------------
 
 -- | Generates a list of n unique random grid points
 genRandomPoints :: Int -> IO [Point]

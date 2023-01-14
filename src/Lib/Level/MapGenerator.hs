@@ -5,67 +5,53 @@ module Lib.Level.MapGenerator
   , generateGrid
   ) where
 
-import Control.Monad (forM)
 import System.Random (randomRIO)
-import Data.Array (assocs, (//), (!))
+import Data.Array (assocs, (//))
 import qualified Graphics.Gloss as G
 import Lib.Level.Grid (Grid(..), emptyGrid)
-import Lib.Level.Path (genRandomPath, genRandomPoint, addPathToGrid)
+import Lib.Level.Path (genRandomPath, addPathToGrid)
 import qualified Lib.Level.TileType as TT
-import Lib.Util (inRangeF)
+import Lib.Util (chooseRandom)
 import qualified GameObjects.Terrain as T
 import Graphics.Gloss (pictures)
+import GameObjects.Terrain (greenTrees, brownTrees)
 
-greenTreeProb :: Float
-greenTreeProb = 0.05
+greenTreeRange :: (Int, Int)
+greenTreeRange = (3, 6)
 
-brownTreeProb :: Float
-brownTreeProb = 0.0
+brownTreeRange :: (Int, Int)
+brownTreeRange = (1, 6)
 
 generateGrid :: IO Grid
 generateGrid = addPathToGrid emptyGrid <$> genRandomPath
 
 randomGreenTree :: IO T.Tile
-randomGreenTree = do
-  tObj <- T.terrainObjects
-  i <- randomRIO (0 :: Int, 3)
-  return $ case i of
-    0 -> T.greenTree1 tObj
-    1 -> T.greenTree2 tObj
-    2 -> T.greenTree3 tObj
-    3 -> T.greenTree4 tObj
+randomGreenTree = head <$> (chooseRandom 1 =<< greenTrees)
 
 randomBrownTree :: IO T.Tile
-randomBrownTree = do
-  tObj <- T.terrainObjects
-  i <- randomRIO (0 :: Int, 3)
-  return $ case i of
-    0 -> T.brownTree1 tObj
-    1 -> T.brownTree2 tObj
-    2 -> T.brownTree3 tObj
-    3 -> T.brownTree4 tObj
+randomBrownTree = head <$> (chooseRandom 1 =<< brownTrees)
 
-randomObject :: IO TT.TileType
-randomObject = chooseObj <$> randomRIO (0 :: Float, 1) 
-  where
-    chooseObj :: Float -> TT.TileType
-    chooseObj p
-      | inRangeF (0, greenTreeProb) p                             = TT.GreenTree
-      | inRangeF (greenTreeProb, greenTreeProb + brownTreeProb) p = TT.BrownTree
-      | otherwise                                                 = TT.Grass
+objectsToAdd :: IO [(Int, TT.TileType)]
+objectsToAdd = do
+  grTreeCount <- randomRIO greenTreeRange
+  brTreeCount <- randomRIO brownTreeRange
+  return 
+    [ (grTreeCount, TT.GreenTree)
+    , (brTreeCount, TT.BrownTree)
+    ]
 
-addTreesToGrid :: Grid -> IO Grid
-addTreesToGrid grid = do
-  let el = filter ((==TT.Empty) . snd) $ assocs $ unGrid grid
-  let packObj (p, _) = (p,) <$>  randomObject
-        -- obj <- 
-        -- return (p, obj)
+addObjectsToGrid :: Grid -> IO Grid
+addObjectsToGrid grid = do
+  let 
+    emptyTiles = filter ((==TT.Empty) . snd) $ assocs $ unGrid grid
     
-    -- randomObj :: IO TT.TileType
-    -- randomObj = chooseObj <$> randomRIO (0 :: Float, 1) 
-  bs <- 
-    forM el packObj
-  return $ Grid $ unGrid grid // bs
+    addObjects :: [(Int, TT.TileType)] -> [(Int, Int)] -> [((Int, Int), TT.TileType)]
+    addObjects ((n, tType):objs) points = zip (take n points) (repeat tType) ++ addObjects objs (drop n points) 
+    addObjects [] _ = []
+  objs <- objectsToAdd
+  let totalCount = sum $ map fst objs
+  shuffled <- chooseRandom totalCount emptyTiles
+  return $ Grid $ unGrid grid // addObjects objs (map fst shuffled)
 
 drawTerraineWithMap :: (TT.TileType -> T.Tile) -> Grid -> G.Picture
 drawTerraineWithMap tf = T.drawTerrain . T.Terrain . map tTypeF . assocs . unGrid
@@ -91,19 +77,10 @@ picturizeGrid grid = do
     tileMap TT.RoadDownRight  = T.roadTopLeftSharp tTil
     tileMap TT.RoadCrossing   = T.roadCrossing tTil
     tileMap TT.Grass          = T.grass tTil
-    tileMap TT.GreenTree      = T.greenTree1 tObj
-    tileMap TT.BrownTree      = T.brownTree1 tObj
-
-    -- TODO percentages should be correct
-    insertObjects :: Grid -> IO Grid
-    insertObjects grid = do
-      obj <- randomObject
-      (x, y) <- genRandomPoint
-      if unGrid grid ! (x, y) == TT.Empty
-        then return $ Grid $ unGrid grid // [((x, y), obj)]
-        else insertObjects grid
+    tileMap TT.GreenTree      = T.greenTree1 tObj   -- TODO
+    tileMap TT.BrownTree      = T.brownTree1 tObj   -- TODO
 
   grassBg <- grassBackground
-  newGrid <- addTreesToGrid grid
+  newGrid <- addObjectsToGrid grid
   return $ pictures [grassBg, drawTerraineWithMap tileMap newGrid]
     

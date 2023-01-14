@@ -19,7 +19,6 @@ import Lib.Level.Grid (emptyGrid)
 import Lib.Level.MapGenerator (picturizeGrid)
 import Codec.Picture (convertRGBA8, Pixel (pixelAt), Image (imageData, imageWidth, imageHeight), PixelRGBA8 (PixelRGBA8))
 import ThirdParty.GraphicsGlossJuicy (fromDynamicImage, fromImageRGBA8)
-import GameObjects.Terrain (cropTile)
 import Codec.Picture.Extra (crop)
 
 
