@@ -1,8 +1,11 @@
 {-# LANGUAGE TupleSections #-}
 
 module Lib.Spritesheet
-  ( animFrames
+  ( Frame(..)
+  , FrameIndex
+  , animFrames
   , animFramesFlip
+  , allFrames
   ) where
 
 import qualified Data.HashMap.Strict as HM
@@ -17,10 +20,10 @@ type FrameSize = (Int, Int)
 type RowIndexConfig = (Int, Int, Int) -- (row index, col index, frame count in the row)
 
 data Frame = Frame
-  { index    :: FrameIndex
-  , original :: G.Picture
-  , flipped  :: G.Picture
-  , size     :: FrameSize
+  { index    :: !FrameIndex
+  , original :: !G.Picture
+  , flipped  :: !G.Picture
+  , size     :: !FrameSize
   }
 
 mkFrame :: FrameIndex -> FrameSize -> C.DynamicImage -> Frame
@@ -55,8 +58,7 @@ framesIndexed :: FrameSize -> C.DynamicImage -> [FrameIndex] -> [Frame]
 framesIndexed s img = mapMaybe (frameMap HM.!?)
   where 
     frameKV frame = (index frame, frame)
-    mapFromFrames = HM.fromList . map frameKV
-    frameMap = mapFromFrames $ allFrames s img
+    frameMap = HM.fromList $ map frameKV $ allFrames s img
 
 genRowIndices :: RowIndexConfig -> [FrameIndex]
 genRowIndices (r, c, cnt) = map (r,) [c..c+cnt-1]

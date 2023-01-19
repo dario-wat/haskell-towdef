@@ -4,7 +4,6 @@ module Lib.Animation
   ( Animation   -- Exporting only the type
   , MkAnimation
   , animating
-  , mkNoAnimationFn
   , mkNoAnimation
   , mkAnimation
   , update
@@ -18,9 +17,9 @@ import qualified ThirdParty.GraphicsGlossGame as G
 type MkAnimation = Float -> G.Animation
 
 data Animation = Animation
-  { current :: G.Animation
-  , make    :: MkAnimation
-  , repeat  :: Int   -- Number of times to repeat the animation (-1 for infinite)
+  { current :: !G.Animation
+  , make    :: !MkAnimation
+  , repeat  :: !Int   -- Number of times to repeat the animation (-1 for infinite)
   }
 
 mkNoAnimation :: Animation
@@ -48,8 +47,3 @@ update now animation@Animation{current, make, repeat}
 
 animating :: (world -> Animation) -> G.Scene world
 animating worldAnim = G.animating (current . worldAnim) G.blank
-
-
--- TODO should be removed
-mkNoAnimationFn :: MkAnimation
-mkNoAnimationFn _ = G.noAnimation

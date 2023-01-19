@@ -13,7 +13,8 @@ module GameObjects.Sprite
 -- TODO WIP
 
 import Graphics.Gloss (Picture, translate, blank)
-import Lib.Animation (MkAnimation, mkNoAnimationFn)
+import Lib.Animation (MkAnimation)
+import ThirdParty.GraphicsGlossGame (noAnimation)
 
 data Sprite = Sprite
   { x      :: Float
@@ -32,6 +33,10 @@ update (Sprite x y velX velY pic mkAnim) = Sprite x' y' velX velY pic mkAnim
   where
     x' = x + velX
     y' = y + velY
+
+-- TODO should be removed
+mkNoAnimationFn :: MkAnimation
+mkNoAnimationFn _ = noAnimation
 
 mkSprite :: Float -> Float -> Float -> Float -> Picture -> MkAnimation -> Sprite
 mkSprite x y velX velY pic mkAnim = Sprite {x, y, velX, velY, pic, mkAnim}
