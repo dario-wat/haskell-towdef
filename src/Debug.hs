@@ -6,8 +6,6 @@ module Debug
   , debugPoint
   , debugPointWithCoords
   , debugExampleTerrain
-  , gridArrayStr
-  , gridArraysStr
   ) where
 
 -- TODO WIP
@@ -17,9 +15,7 @@ import Lib.Image (readPngOrError, boundingBox)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Level.Grid (Grid(..), emptyGrid, gridArrayStr, gridArraysStr)
 import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
-import Data.Array ((//))
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
 debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ boundingBox tile
@@ -102,8 +98,6 @@ debugTerrain = do
     , mkStaticSprite  (-20) (-320) $ T.picture $ T.roadBottomRightSharp tTil
     , mkStaticSprite    180    300 $ T.picture $ T.grass tTil
     ]
-
-
 
 debugExampleTerrain :: IO G.Picture
 debugExampleTerrain = do

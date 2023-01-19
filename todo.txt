@@ -4,10 +4,10 @@
 - Towers (create, upgrade, shoot bullets)
 - Enemies take damage and die
 - Generate maps and paths
-- Grid
 - Water
 - Generate path
 - Generate terraine from the path
 - Mapping module
 - Remove useless debug code
 - Use constants for tile characters
+- Add rounded corners

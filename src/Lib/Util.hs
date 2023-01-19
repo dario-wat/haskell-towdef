@@ -7,6 +7,7 @@ module Lib.Util
   , count
   , chooseRandom
   ) where
+
 import System.Random.Shuffle (shuffleM)
 
 cartProd :: [a] -> [b] -> [(a, b)]
