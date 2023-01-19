@@ -4,7 +4,7 @@ module GameObjects.WalkingEnemy
   ) where
 
 -- TODO
--- 1. Need only animations, not pictures
+-- Add other bugs
 
 import Codec.Picture (DynamicImage)
 import ThirdParty.GraphicsGlossGame (animation)

@@ -1,8 +1,8 @@
 module Debug 
-  ( debugSpritesheet
-  , debugSpritesheetFrames
-  , debugSpritesheetFramesIndexed
-  , debugTerrain
+  ( -- debugSpritesheet
+  -- , debugSpritesheetFrames
+  -- , debugSpritesheetFramesIndexed
+  debugTerrain
   , debugPoint
   , debugPointWithCoords
   , debugExampleTerrain
@@ -15,7 +15,6 @@ import Lib.Image (readPngOrError, boundingBox)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Spritesheet (Frame, allFrames, FrameIndex, framesIndexed)
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
 debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ boundingBox tile
@@ -36,25 +35,25 @@ coordinate x y = G.translate (x + xOff) y $ textScale $ G.text coordText
 debugPointWithCoords :: Float -> Float -> G.Picture
 debugPointWithCoords x y = G.pictures [debugPoint x y, coordinate x y]
 
-debugSpritesheet :: Int -> Int -> FilePath -> IO G.Picture
-debugSpritesheet w h imgPath = do
-  img <- readPngOrError imgPath
-  return $ debugSpritesheetFrames $ allFrames w h img
+-- debugSpritesheet :: Int -> Int -> FilePath -> IO G.Picture
+-- debugSpritesheet w h imgPath = do
+--   img <- readPngOrError imgPath
+--   return $ debugSpritesheetFrames $ allFrames w h img
 
-debugSpritesheetFramesIndexed :: Int -> Int -> FilePath -> [FrameIndex] -> IO G.Picture
-debugSpritesheetFramesIndexed w h imgPath coords = do
-  img <- readPngOrError imgPath
-  return $ debugSpritesheetFrames $ framesIndexed w h img coords
+-- debugSpritesheetFramesIndexed :: Int -> Int -> FilePath -> [FrameIndex] -> IO G.Picture
+-- debugSpritesheetFramesIndexed w h imgPath coords = do
+--   img <- readPngOrError imgPath
+--   return $ debugSpritesheetFrames $ framesIndexed w h img coords
 
-debugSpritesheetFrames :: [Frame] -> G.Picture
-debugSpritesheetFrames fs =
-  G.pictures $ map (\(i, pic, s) -> debugAndDrawSprite $ sprite i s pic) fs
-  where 
-    (xOff, yOff) = (-600, 300)
-    padding = 10
-    sprite (r, c) (w, h) = mkStaticSprite 
-      (fromIntegral $ c * (w + padding) + xOff) 
-      (fromIntegral $ - r * (h + padding) + yOff)
+-- debugSpritesheetFrames :: [Frame] -> G.Picture
+-- debugSpritesheetFrames fs =
+--   G.pictures $ map (\(i, pic, s) -> debugAndDrawSprite $ sprite i s pic) fs
+--   where 
+--     (xOff, yOff) = (-600, 300)
+--     padding = 10
+--     sprite (r, c) (w, h) = mkStaticSprite 
+--       (fromIntegral $ c * (w + padding) + xOff) 
+--       (fromIntegral $ - r * (h + padding) + yOff)
 
 debugTerrain :: IO G.Picture
 debugTerrain = do

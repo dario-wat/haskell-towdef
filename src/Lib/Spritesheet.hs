@@ -1,92 +1,70 @@
 {-# LANGUAGE TupleSections #-}
 
 module Lib.Spritesheet
-  ( allFrames
-  , allFramesFlipped
-  , framePictures
-  , framesIndexed
-  , framesIndexedFlipped
-  , genRowIndices
-  , animFrames
+  ( animFrames
   , animFramesFlip
-  , Frame
-  , FrameIndex
   ) where
 
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (mapMaybe)
-import qualified Graphics.Gloss as G
-import Graphics.Gloss (Picture)
-import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
 import Codec.Picture.Extra (crop, flipHorizontally)
-import Codec.Picture (DynamicImage, dynamicMap, Image (imageWidth, imageHeight), convertRGBA8, PixelRGBA8)
-
--- data Frame = Frame
---   { index    :: FrameIndex
---   , original :: Picture
---   , flipped  :: Picture
---   , size     :: FrameSize
---   }
+import qualified Codec.Picture as C
+import qualified Graphics.Gloss as G
+import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
 
 type FrameIndex = (Int, Int)
 type FrameSize = (Int, Int)
-type Frame = (FrameIndex, Picture, FrameSize)
-type RowIndexConfig = (Int, Int, Int)   -- (row index, col index, frame count)
+type RowIndexConfig = (Int, Int, Int) -- (row index, col index, frame count in the row)
 
-type AllFramesFn = Int -> Int -> DynamicImage -> [Frame]
+data Frame = Frame
+  { index    :: FrameIndex
+  , original :: G.Picture
+  , flipped  :: G.Picture
+  , size     :: FrameSize
+  }
 
-type CropFn = Int -> Int -> Int -> Int -> DynamicImage -> G.Picture
+mkFrame :: FrameIndex -> FrameSize -> C.DynamicImage -> Frame
+mkFrame i s img = Frame
+  { index    = i
+  , original = cropFrame i s img
+  , flipped  = cropFrameAndFlip i s img
+  , size     = s
+  }
 
 -- r and c are row and column of the frame in the spritesheet or tileset
-cropFrameDyn :: Int -> Int -> Int -> Int -> DynamicImage -> Image PixelRGBA8
-cropFrameDyn r c w h = crop (c * w) (r * h) w h . convertRGBA8
+cropFrameDyn :: FrameIndex -> FrameSize -> C.DynamicImage -> C.Image C.PixelRGBA8
+cropFrameDyn (r, c) (w, h) = crop (c * w) (r * h) w h . C.convertRGBA8
 
-cropFrame :: Int -> Int -> Int -> Int -> DynamicImage -> G.Picture
-cropFrame r c w h = fromImageRGBA8 . cropFrameDyn r c w h
+cropFrame :: FrameIndex -> FrameSize -> C.DynamicImage -> G.Picture
+cropFrame i s = fromImageRGBA8 . cropFrameDyn i s
 
-cropFrameAndFlip :: Int -> Int -> Int -> Int -> DynamicImage -> G.Picture
-cropFrameAndFlip r c w h = fromImageRGBA8 . flipHorizontally . cropFrameDyn r c w h
+cropFrameAndFlip :: FrameIndex -> FrameSize -> C.DynamicImage -> G.Picture
+cropFrameAndFlip i s = fromImageRGBA8 . flipHorizontally . cropFrameDyn i s
 
+-- | Creates a list of all frames in a spritesheet. Includes original and flipped.
 -- w and h are width and height of a single frame
-allFramesFn :: CropFn -> Int -> Int -> DynamicImage -> [Frame]
-allFramesFn cropFn w h img = 
-  [((r, c), cropFn r c w h img, (w, h)) | r <- [0..hFr-1], c <- [0..wFr-1]]
+allFrames :: FrameSize -> C.DynamicImage -> [Frame]
+allFrames (w, h) img = [ mkFrame (r, c) (w, h) img | r <- [0..hFr-1], c <- [0..wFr-1]]
   where
-    wFr = dynamicMap imageWidth img `div` w
-    hFr = dynamicMap imageHeight img `div` h
+    wFr = C.dynamicMap C.imageWidth img `div` w
+    hFr = C.dynamicMap C.imageHeight img `div` h
 
-allFrames :: Int -> Int -> DynamicImage -> [Frame]
-allFrames = allFramesFn cropFrame
-
-allFramesFlipped :: Int -> Int -> DynamicImage -> [Frame]
-allFramesFlipped = allFramesFn cropFrameAndFlip
-
-framesIndexedFn :: AllFramesFn -> Int -> Int -> DynamicImage -> [FrameIndex] -> [Frame]
-framesIndexedFn fsFn w h img = mapMaybe (frameMap HM.!?)
+-- | Extracts all frames from a spritesheet given frame width, height and 
+-- indices (row, column)
+framesIndexed :: FrameSize -> C.DynamicImage -> [FrameIndex] -> [Frame]
+framesIndexed s img = mapMaybe (frameMap HM.!?)
   where 
-    frameKV f@(i, _, _) = (i, f)
+    frameKV frame = (index frame, frame)
     mapFromFrames = HM.fromList . map frameKV
-    frameMap = mapFromFrames $ fsFn w h img
+    frameMap = mapFromFrames $ allFrames s img
 
-framesIndexed :: Int -> Int -> DynamicImage -> [FrameIndex] -> [Frame]
-framesIndexed = framesIndexedFn allFrames
-
-framesIndexedFlipped :: Int -> Int -> DynamicImage -> [FrameIndex] -> [Frame]
-framesIndexedFlipped = framesIndexedFn allFramesFlipped
-
-genRowIndices :: Int -> Int -> Int -> [FrameIndex]
-genRowIndices r c cnt = map (r,) [c..c+cnt-1]
-
-framePictures :: [Frame] -> [Picture]
-framePictures = map framePicture
-  where framePicture (_, pic, _) = pic
+genRowIndices :: RowIndexConfig -> [FrameIndex]
+genRowIndices (r, c, cnt) = map (r,) [c..c+cnt-1]
 
 -- | Generate a list of pictures from a spritesheet given the frame size
 -- and the row configuration (row index, column index, number of frames)
-animFrames :: FrameSize -> RowIndexConfig -> DynamicImage -> [Picture]
-animFrames (w, h) (r, c, cnt) img = 
-  framePictures $ framesIndexed w h img $ genRowIndices r c cnt
+animFrames :: FrameSize -> RowIndexConfig -> C.DynamicImage -> [G.Picture]
+animFrames s conf img = map original $ framesIndexed s img $ genRowIndices conf
 
-animFramesFlip :: FrameSize -> RowIndexConfig -> DynamicImage -> [Picture]
-animFramesFlip (w, h) (r, c, cnt) img = 
-  framePictures $ framesIndexedFlipped w h img $ genRowIndices r c cnt
+animFramesFlip :: FrameSize -> RowIndexConfig -> C.DynamicImage -> [G.Picture]
+animFramesFlip s conf img = map flipped $ framesIndexed s img $ genRowIndices conf
