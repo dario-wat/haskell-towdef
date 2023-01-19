@@ -1,5 +1,5 @@
-module GameObjects.WalkingEnemy
-  ( WalkingEnemyAnimations(..)
+module GameObjects.Enemy
+  ( EnemyAnimations(..)
   , firebugAnimations
   , leafbugAnimations
   , magmaCrabAnimations
@@ -11,25 +11,25 @@ import Lib.Image (readPngOrError)
 import Lib.Animation (MkAnimation)
 import Lib.Spritesheet (animFrames, animFramesFlip)
 
-data WalkingEnemyAnimations = WalkingEnemyAnimations
-  { walkDown  :: MkAnimation
-  , walkUp    :: MkAnimation
-  , walkRight :: MkAnimation
-  , walkLeft  :: MkAnimation
-  , dieDown   :: MkAnimation
-  , dieUp     :: MkAnimation
-  , dieRight  :: MkAnimation
-  , dieLeft   :: MkAnimation
+data EnemyAnimations = EnemyAnimations
+  { moveDown  :: !MkAnimation
+  , moveUp    :: !MkAnimation
+  , moveRight :: !MkAnimation
+  , moveLeft  :: !MkAnimation
+  , dieDown   :: !MkAnimation
+  , dieUp     :: !MkAnimation
+  , dieRight  :: !MkAnimation
+  , dieLeft   :: !MkAnimation
   }
 
-firebugAnimations :: IO WalkingEnemyAnimations
+firebugAnimations :: IO EnemyAnimations
 firebugAnimations = do
   img <- readPngOrError "assets/firebug.png"
-  return $ WalkingEnemyAnimations
-    { walkDown  = animation (animFrames     size (3, 0,  8) img) 0.1
-    , walkUp    = animation (animFrames     size (4, 0,  8) img) 0.1
-    , walkRight = animation (animFrames     size (5, 0,  8) img) 0.1
-    , walkLeft  = animation (animFramesFlip size (5, 0,  8) img) 0.1
+  return $ EnemyAnimations
+    { moveDown  = animation (animFrames     size (3, 0,  8) img) 0.1
+    , moveUp    = animation (animFrames     size (4, 0,  8) img) 0.1
+    , moveRight = animation (animFrames     size (5, 0,  8) img) 0.1
+    , moveLeft  = animation (animFramesFlip size (5, 0,  8) img) 0.1
     , dieDown   = animation (animFrames     size (6, 0, 11) img) 0.1
     , dieUp     = animation (animFrames     size (7, 0, 11) img) 0.1
     , dieRight  = animation (animFrames     size (8, 0, 11) img) 0.1
@@ -37,14 +37,14 @@ firebugAnimations = do
     }
   where size = (128, 64)
 
-leafbugAnimations :: IO WalkingEnemyAnimations
+leafbugAnimations :: IO EnemyAnimations
 leafbugAnimations = do
   img <- readPngOrError "assets/leafbug.png"
-  return $ WalkingEnemyAnimations
-    { walkDown  = animation (animFrames     size (3, 0, 8) img) 0.1
-    , walkUp    = animation (animFrames     size (4, 0, 8) img) 0.1
-    , walkRight = animation (animFrames     size (5, 0, 8) img) 0.1
-    , walkLeft  = animation (animFramesFlip size (5, 0, 8) img) 0.1
+  return $ EnemyAnimations
+    { moveDown  = animation (animFrames     size (3, 0, 8) img) 0.1
+    , moveUp    = animation (animFrames     size (4, 0, 8) img) 0.1
+    , moveRight = animation (animFrames     size (5, 0, 8) img) 0.1
+    , moveLeft  = animation (animFramesFlip size (5, 0, 8) img) 0.1
     , dieDown   = animation (animFrames     size (6, 0, 7) img) 0.1
     , dieUp     = animation (animFrames     size (7, 0, 7) img) 0.1
     , dieRight  = animation (animFrames     size (8, 0, 7) img) 0.1
@@ -52,14 +52,14 @@ leafbugAnimations = do
     }
   where size = (64, 64)
 
-magmaCrabAnimations :: IO WalkingEnemyAnimations
+magmaCrabAnimations :: IO EnemyAnimations
 magmaCrabAnimations = do
   img <- readPngOrError "assets/magma_crab.png"
-  return $ WalkingEnemyAnimations
-    { walkDown  = animation (animFrames     size (3, 0,  8) img) 0.1
-    , walkUp    = animation (animFrames     size (4, 0,  8) img) 0.1
-    , walkRight = animation (animFramesFlip size (5, 0,  8) img) 0.1
-    , walkLeft  = animation (animFrames     size (5, 0,  8) img) 0.1
+  return $ EnemyAnimations
+    { moveDown  = animation (animFrames     size (3, 0,  8) img) 0.1
+    , moveUp    = animation (animFrames     size (4, 0,  8) img) 0.1
+    , moveRight = animation (animFramesFlip size (5, 0,  8) img) 0.1
+    , moveLeft  = animation (animFrames     size (5, 0,  8) img) 0.1
     , dieDown   = animation (animFrames     size (6, 0, 10) img) 0.1
     , dieUp     = animation (animFrames     size (7, 0, 10) img) 0.1
     , dieRight  = animation (animFramesFlip size (8, 0, 10) img) 0.1
@@ -67,14 +67,14 @@ magmaCrabAnimations = do
     }
   where size = (64, 64)
 
-scorpionAnimations :: IO WalkingEnemyAnimations
+scorpionAnimations :: IO EnemyAnimations
 scorpionAnimations = do
   img <- readPngOrError "assets/scorpion.png"
-  return $ WalkingEnemyAnimations
-    { walkDown  = animation (animFrames     size (3, 0, 8) img) 0.1
-    , walkUp    = animation (animFrames     size (4, 0, 8) img) 0.1
-    , walkRight = animation (animFramesFlip size (5, 0, 8) img) 0.1
-    , walkLeft  = animation (animFrames     size (5, 0, 8) img) 0.1
+  return $ EnemyAnimations
+    { moveDown  = animation (animFrames     size (3, 0, 8) img) 0.1
+    , moveUp    = animation (animFrames     size (4, 0, 8) img) 0.1
+    , moveRight = animation (animFramesFlip size (5, 0, 8) img) 0.1
+    , moveLeft  = animation (animFrames     size (5, 0, 8) img) 0.1
     , dieDown   = animation (animFrames     size (6, 0, 8) img) 0.1
     , dieUp     = animation (animFrames     size (7, 0, 8) img) 0.1
     , dieRight  = animation (animFramesFlip size (8, 0, 8) img) 0.1

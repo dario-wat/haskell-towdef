@@ -5,7 +5,7 @@ import Lib.Window (windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss
 import Debug.Trace (traceShowId, traceShow, trace)
 import ThirdParty.GraphicsGlossGame (playInScene, picturing, noAnimation, scenes, translating)
-import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkRight, walkLeft), firebugAnimations, leafbugAnimations, magmaCrabAnimations, scorpionAnimations)
+import GameObjects.Enemy (EnemyAnimations(moveDown, moveRight, moveLeft), firebugAnimations, leafbugAnimations, magmaCrabAnimations, scorpionAnimations)
 import GameObjects.Sprite (mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
 import Lib.Level.Path (genRandomPath, addPathToGrid)
@@ -27,10 +27,10 @@ mkGameState = do
   return $ GameState
     { --bug = mkNonAnimatedSprite 300 0 (-1) 0 (down fbp)
       animations = HM.fromList
-        [ ("firebug", A.mkAnimation (walkRight fba) (-1))
-        , ("leafbug", A.mkAnimation (walkLeft lba) (-1))
-        , ("magma", A.mkAnimation (walkLeft mca) (-1))
-        , ("scorpion", A.mkAnimation (walkRight sca) (-1))
+        [ ("firebug", A.mkAnimation (moveRight fba) (-1))
+        , ("leafbug", A.mkAnimation (moveLeft lba) (-1))
+        , ("magma", A.mkAnimation (moveLeft mca) (-1))
+        , ("scorpion", A.mkAnimation (moveRight sca) (-1))
         ]
     }
 

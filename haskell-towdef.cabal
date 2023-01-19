@@ -27,9 +27,9 @@ library
   exposed-modules:
       Const
       Debug
+      GameObjects.Enemy
       GameObjects.Sprite
       GameObjects.Terrain
-      GameObjects.WalkingEnemy
       Lib.Animation
       Lib.Image
       Lib.Level.Grid
