@@ -20,17 +20,11 @@ type Point = (Int, Int)
 type Path = [Point]
 type PathSegment = (Point, Point)
 
--- TODO
--- not adjacent
--- not cross at the edge
--- not go across edges
--- crossing doesnt work 100%
-
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
 
 pathLengthRange :: (Int, Int)
-pathLengthRange = (50, 110)
+pathLengthRange = (70, 110)
 
 crossingCountRange :: (Int, Int)
 crossingCountRange = (0, 2)
@@ -45,6 +39,7 @@ crossingCountRange = (0, 2)
 --    4. Path cannot have too many crossings
 --    5. Path cannot be on any of the edges
 --    6. Path has to be a part of at least 3 quadrants
+--    7. Path segments cannot be adjacent
 isValidPath :: Path -> Bool
 isValidPath []   = False
 isValidPath [_]  = False
@@ -54,11 +49,13 @@ isValidPath path =
   && inRange crossingCountRange (crossingCount path)
   && (not . any segmentIsEdge) (pathSegments path)
   && quadrantCount path >= 3
+  && hasNoAdjacentSegments path
   where
     hasNoOverlap = not . any (uncurry segmentOverlap) . allSegmentPairs
     crossingCount = count (isJust . uncurry segmentCrossing) . allSegmentPairs
     pathLength = (+1) . sum . map (uncurry manhattanDist) . pathSegments
     quadrantCount = length . nub . map pointQuadrant
+    hasNoAdjacentSegments = not . any (uncurry segmentAdjacent) . allSegmentPairs
     
 -- | Generates a single random path that satisfies all validity requirements.
 genRandomPath :: IO Path
@@ -175,20 +172,28 @@ allSegmentPairs :: Path -> [(PathSegment, PathSegment)]
 allSegmentPairs path = filter (uncurry (/=)) $ cartProd allSegments allSegments
   where allSegments = pathSegments path
 
+-- | Checks whether two ranges overlap. Inputs don't have to be sorted.
+rangeOverlap :: (Int, Int) -> (Int, Int) -> Bool
+rangeOverlap (a1, a2) (b1, b2)
+  | a1 > a2   = rangeOverlap (a2, a1) (b1, b2)
+  | b1 > b2   = rangeOverlap (a1, a2) (b2, b1)
+  | a1 > b1   = rangeOverlap (b1, b2) (a1, a2)
+  | a2 <= b1  = False
+  | otherwise = True
+
 -- | Checks whether two path segments overlap
 segmentOverlap :: PathSegment -> PathSegment -> Bool
 segmentOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
-  | all (== x1) [x2, x3, x4] = overlap y1 y2 y3 y4
-  | all (== y1) [y2, y3, y4] = overlap x1 x2 x3 x4
+  | all (== x1) [x2, x3, x4] = rangeOverlap (y1, y2) (y3, y4)
+  | all (== y1) [y2, y3, y4] = rangeOverlap (x1, x2) (x3, x4)
   | otherwise                = False
-  where 
-    overlap a1 a2 b1 b2
-      | a1 > a2   = overlap a2 a1 b1 b2
-      | b1 > b2   = overlap a1 a2 b2 b1
-      | a1 > b1   = overlap b1 b2 a1 a2
-      | a2 <= b1  = False
-      | otherwise = True
 
+segmentAdjacent :: PathSegment -> PathSegment -> Bool
+segmentAdjacent ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4)) =
+  x1 == x2 && x3 == x4 && abs (x1 - x3) == 1 && rangeOverlap (y1, y2) (y3, y4) ||
+  y1 == y2 && y3 == y4 && abs (y1 - y3) == 1 && rangeOverlap (x1, x2) (x3, x4)
+  
+-- There might be a bug here
 -- | Finds a crossing point between two segments if there is one
 segmentCrossing :: PathSegment -> PathSegment -> Maybe Point
 segmentCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
