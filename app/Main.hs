@@ -1,31 +1,24 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-import Lib.Window (windowSize, windowSizeForInWindow, windowPositionForInWindow)
+import Lib.Window (windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss
 import Debug.Trace (traceShowId, traceShow, trace)
-import GameObjects.Terrain
-import Debug
-import Lib.Spritesheet (genRowIndices, framePictures, framesIndexed, animFrames)
-import ThirdParty.GraphicsGlossGame (playInScene, picturing, animating, Animation, noAnimation, animation, animationPicture, translating, scenes)
-import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkLeft), firebugAnimations, firebugPictures, WalkingEnemyPictures (down))
-import Lib.Image (readPngOrError)
-import Data.Maybe (isNothing, fromJust)
-import Lib.Animation (repeatingAnimation, drawingAnimation)
-import GameObjects.Sprite (mkSprite, mkNonAnimatedSprite)
+import ThirdParty.GraphicsGlossGame (playInScene, picturing, Animation, noAnimation, scenes)
+import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkRight, walkLeft), firebugAnimations, firebugPictures, WalkingEnemyPictures (down))
+import Lib.Animation (drawingAnimation)
+import GameObjects.Sprite (mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
 import Lib.Level.Path (genRandomPath, addPathToGrid)
-import Data.Array (Array, listArray, assocs, ixmap, elems, (//))
 import Lib.Level.Grid (emptyGrid)
 import Lib.Level.MapGenerator (picturizeGrid)
-import Codec.Picture (convertRGBA8, Pixel (pixelAt), Image (imageData, imageWidth, imageHeight), PixelRGBA8 (PixelRGBA8))
-import ThirdParty.GraphicsGlossJuicy (fromDynamicImage, fromImageRGBA8)
-import Codec.Picture.Extra (crop)
+import qualified Lib.Animation as A
 
 
 data GameState = GameState
   { anim :: Animation
   , anim2 :: Animation
   , bug :: S.Sprite
+  , an :: A.Animation
   }
 
 mkGameState :: IO GameState
@@ -36,6 +29,7 @@ mkGameState = do
     { anim = noAnimation
     , anim2 = noAnimation
     , bug = mkNonAnimatedSprite 300 0 (-1) 0 (down fbp)
+    , an = A.mkAnimation (walkRight fba) True
     }
 
 window :: Display
@@ -58,15 +52,13 @@ main = do
   gridPic <- picturizeGrid grid
   -- putStrLn . gridArrayStr . addPathToGrid emptyGrid =<< genRandomPath
   let
-    applyBs now _ world = 
-      world 
-        { anim = repeatingAnimation (anim world) (walkLeft fba) now
-        , anim2 = repeatingAnimation (anim2 world) (walkDown fba) now
-        }
     animationScenes = scenes
       [ drawingAnimation 128 64 anim
       , drawingAnimation (-100) 100 anim2
       , drawingAnimation (-200) 100 anim
+      -- , A.animating (-300) 100 (an gs)
+      , drawingAnimation (-300) 100 (A.current . an)
+
       ]
   playInScene
     window 
@@ -74,6 +66,11 @@ main = do
     60
     gs 
     -- (picturing (\w -> S.draw $ bug w))
-    (picturing $ const $ pictures [gridPic])
+    (scenes [
+      picturing $ const $ pictures [gridPic]
+      , picturing (S.draw . bug)
+      , animationScenes])
     (\_ _ -> id) 
-    [\_ _ (GameState anim anim2 bug) -> GameState {bug = S.update bug}]
+    [ \_ _ (GameState anim anim2 bug an) -> GameState {anim, anim2, bug = S.update bug, an}
+    , \now _ world -> world {an = A.update now (an world)}
+    ]

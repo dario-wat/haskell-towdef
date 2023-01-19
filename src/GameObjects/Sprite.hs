@@ -13,7 +13,7 @@ module GameObjects.Sprite
 -- TODO WIP
 
 import Graphics.Gloss (Picture, translate, blank)
-import Lib.Animation (MkAnimation, mkNoAnimation)
+import Lib.Animation (MkAnimation, mkNoAnimationFn)
 
 data Sprite = Sprite
   { x      :: Float
@@ -37,13 +37,13 @@ mkSprite :: Float -> Float -> Float -> Float -> Picture -> MkAnimation -> Sprite
 mkSprite x y velX velY pic mkAnim = Sprite {x, y, velX, velY, pic, mkAnim}
 
 mkNonAnimatedSprite :: Float -> Float -> Float -> Float -> Picture -> Sprite
-mkNonAnimatedSprite x y velX velY pic = mkSprite x y velX velY pic mkNoAnimation
+mkNonAnimatedSprite x y velX velY pic = mkSprite x y velX velY pic mkNoAnimationFn
 
 mkStaticSprite :: Float -> Float -> Picture -> Sprite
-mkStaticSprite x y pic = mkSprite x y 0 0 pic mkNoAnimation
+mkStaticSprite x y pic = mkSprite x y 0 0 pic mkNoAnimationFn
 
 mkDefaultSprite :: Sprite
-mkDefaultSprite = mkSprite 0 0 0 0 blank mkNoAnimation
+mkDefaultSprite = mkSprite 0 0 0 0 blank mkNoAnimationFn
 
 -- repeatSpriteAnimation :: Sprite -> MkAnimation -> Float -> Sprite
 -- repeatSpriteAnimation (Sprite x y pic _) newAnim t = Sprite x y pic (newAnim t)
