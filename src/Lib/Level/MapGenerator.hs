@@ -50,7 +50,7 @@ addObjectsToGrid grid = do
     emptyTiles = filter ((==TT.Empty) . snd) $ assocs $ unGrid grid
     
     addObjects :: [(Int, TT.TileType)] -> [(Int, Int)] -> [((Int, Int), TT.TileType)]
-    addObjects ((n, tType):objs) points = zip (take n points) (repeat tType) ++ addObjects objs (drop n points) 
+    addObjects ((n, tType):objs) points = zip (take n points) (repeat tType) ++ addObjects objs (drop n points)
     addObjects [] _ = []
 
   objs <- objectsToAdd

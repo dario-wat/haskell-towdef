@@ -43,8 +43,9 @@ gridCenterOf (x, y) (w, h) = (centerX, centerY)
 emptyGrid :: Grid
 emptyGrid = Grid $ listArray ((0, 0), (gridCols - 1, gridRows - 1)) $ repeat Empty
 
-
--- Following are private functions used for debugging or as helpers
+--------------------
+-- PRIVATE --
+--------------------
 
 gridDimensions :: (Float, Float)
 gridDimensions = (fromIntegral gridCols * cellSize, fromIntegral gridRows * cellSize)

@@ -9,7 +9,7 @@ module Lib.Level.Path
 import System.Random (randomRIO)
 import Data.Array ((//))
 import Data.Ix (Ix(inRange))
-import Data.List (group)
+import Data.List (group, nub)
 import Data.Maybe (mapMaybe, isJust)
 import qualified Control.Monad.HT as M (until)
 import Lib.Level.Grid (gridCols, gridRows, Grid(..))
@@ -44,6 +44,7 @@ crossingCountRange = (0, 2)
 --    3. Path length has to be within the specified range
 --    4. Path cannot have too many crossings
 --    5. Path cannot be on any of the edges
+--    6. Path has to be a part of at least 3 quadrants
 isValidPath :: Path -> Bool
 isValidPath []   = False
 isValidPath [_]  = False
@@ -52,9 +53,12 @@ isValidPath path =
   && inRange pathLengthRange (pathLength path)
   && inRange crossingCountRange (crossingCount path)
   && (not . any segmentIsEdge) (pathSegments path)
+  && quadrantCount path >= 3
   where
     hasNoOverlap = not . any (uncurry segmentOverlap) . allSegmentPairs
     crossingCount = count (isJust . uncurry segmentCrossing) . allSegmentPairs
+    pathLength = (+1) . sum . map (uncurry manhattanDist) . pathSegments
+    quadrantCount = length . nub . map pointQuadrant
     
 -- | Generates a single random path that satisfies all validity requirements.
 genRandomPath :: IO Path
@@ -78,9 +82,10 @@ addPathToGrid grid path = Grid $ unGrid grid // pathIndices // turnIndices // cr
     crossingIndices = 
       map (,TT.RoadCrossing) $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
 
---------------------
--- PRIVATE --
---------------------
+
+-------------------------------------------------------------------------------
+-- Point
+-------------------------------------------------------------------------------
 
 genRandomPoint :: IO Point
 genRandomPoint = do
@@ -114,6 +119,18 @@ genStartEndPoints = do
   end <- genRandomEdgePoint
   if start == end then genStartEndPoints else return (start, end)
 
+pointQuadrant :: Point -> Int
+pointQuadrant (x, y)
+  | x < gridCols `div` 2 && y < gridRows `div` 2 = 1
+  | x < gridCols `div` 2 && y >= gridRows `div` 2 = 2
+  | x >= gridCols `div` 2 && y < gridRows `div` 2 = 3
+  | x >= gridCols `div` 2 && y >= gridRows `div` 2 = 4
+  | otherwise = error "pointQuadrant: impossible"
+
+-------------------------------------------------------------------------------
+-- Path creation
+-------------------------------------------------------------------------------
+
 -- | There are either one or two paths between two points.
 -- There is only one path if the points are on the same row or column.
 -- Otherwise there are two paths, one going up and one going right.
@@ -146,15 +163,17 @@ createAllPaths :: [Point] -> [Path]
 createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoints
   where removeConsecutiveDuplicates = map head . group
 
+
+-------------------------------------------------------------------------------
+-- Path segments
+-------------------------------------------------------------------------------
+
 pathSegments :: Path -> [PathSegment]
 pathSegments path = zip path (tail path)
 
 allSegmentPairs :: Path -> [(PathSegment, PathSegment)]
 allSegmentPairs path = filter (uncurry (/=)) $ cartProd allSegments allSegments
   where allSegments = pathSegments path
-
-pathLength :: Path -> Int
-pathLength = (+1) . sum . map (uncurry manhattanDist) . pathSegments
 
 -- | Checks whether two path segments overlap
 segmentOverlap :: PathSegment -> PathSegment -> Bool

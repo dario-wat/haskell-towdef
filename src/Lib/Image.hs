@@ -58,4 +58,4 @@ bitmapSizeF bData = (fromIntegral w, fromIntegral h)
 boundingBox :: G.Picture -> G.Picture
 boundingBox (G.Bitmap bData) = G.color G.red $ thickRectangleWire 2 w h
   where (w, h) = bitmapSizeF bData
-boundingBox _              = error "boundingBox: not a bitmap"
+boundingBox _                = error "boundingBox: not a bitmap"
