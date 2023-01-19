@@ -6,15 +6,14 @@ module GameObjects.WalkingEnemy
   ) where
 
 -- TODO
--- WIP
--- 1. data type should be generic for all walking enemies
+-- 1. Need only animations, not pictures
 
+import Codec.Picture (DynamicImage)
+import Graphics.Gloss (Picture)
+import ThirdParty.GraphicsGlossGame (animation)
 import Lib.Image (readPngOrError, cropFrame, cropFrameAndFlip)
 import Lib.Animation (MkAnimation)
-import Codec.Picture (DynamicImage)
-import ThirdParty.GraphicsGlossGame (animation)
 import Lib.Spritesheet (animFrames, animFramesFlip)
-import Graphics.Gloss (Picture)
 import Const (enemySpriteWidth, enemySpriteHeight)
 
 loadFirebug :: IO DynamicImage
