@@ -1,16 +1,14 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
 module Lib.Animation
-  ( mkNoAnimationFn
+  ( Animation   -- Exporting only the type
+  , MkAnimation
+  , animating
+  , mkNoAnimationFn
   , mkNoAnimation
   , mkAnimation
   , update
-  , animating
-  , MkAnimation
-  , Animation   -- Exporting only the type
   ) where
-
--- TODO WIP
 
 import Prelude hiding (repeat)
 import Data.Maybe (isNothing)
@@ -48,15 +46,10 @@ update now animation@Animation{current, make, repeat}
   | otherwise             = animation
   where isCurrentFinished = isNothing $ G.animationPicture current now
 
-animating :: Float -> Float -> (world -> Animation) -> G.Scene world
-animating w h worldAnim = 
-  G.translating (const (w, h)) $ G.animating (current . worldAnim) G.blank
-
--- type AnimationFn = Float -> IO Picture
-
--- TODO maybe use data and constructors
--- Animation can only be created given the start time
+animating :: (world -> Animation) -> G.Scene world
+animating worldAnim = G.animating (current . worldAnim) G.blank
 
 
+-- TODO should be removed
 mkNoAnimationFn :: MkAnimation
 mkNoAnimationFn _ = G.noAnimation

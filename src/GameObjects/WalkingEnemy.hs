@@ -1,17 +1,14 @@
 module GameObjects.WalkingEnemy
-  ( firebugAnimations
-  , firebugPictures
-  , WalkingEnemyPictures(..)
-  , WalkingEnemyAnimations(..)
+  ( WalkingEnemyAnimations(..)
+  , firebugAnimations
   ) where
 
 -- TODO
 -- 1. Need only animations, not pictures
 
 import Codec.Picture (DynamicImage)
-import Graphics.Gloss (Picture)
 import ThirdParty.GraphicsGlossGame (animation)
-import Lib.Image (readPngOrError, cropFrame, cropFrameAndFlip)
+import Lib.Image (readPngOrError)
 import Lib.Animation (MkAnimation)
 import Lib.Spritesheet (animFrames, animFramesFlip)
 import Const (enemySpriteWidth, enemySpriteHeight)
@@ -30,13 +27,6 @@ data WalkingEnemyAnimations = WalkingEnemyAnimations
   , dieLeft   :: MkAnimation
   }
 
-data WalkingEnemyPictures = WalkingEnemyPictures
-  { down  :: Picture
-  , up    :: Picture
-  , right :: Picture
-  , left  :: Picture
-  }
-
 firebugAnimations :: IO WalkingEnemyAnimations
 firebugAnimations = do
   img <- loadFirebug
@@ -51,14 +41,3 @@ firebugAnimations = do
     , dieLeft   = animation (animFramesFlip size (8, 0, 11) img) 0.1
     }
   where size = (enemySpriteWidth, enemySpriteHeight)
-  
-firebugPictures :: IO WalkingEnemyPictures
-firebugPictures = do
-  img <- loadFirebug
-  return $ WalkingEnemyPictures
-    { down  = cropFrame        3 0 w h img
-    , up    = cropFrame        4 0 w h img
-    , right = cropFrame        5 0 w h img
-    , left  = cropFrameAndFlip 5 0 w h img
-    }
-  where (w, h) = (enemySpriteWidth, enemySpriteHeight)

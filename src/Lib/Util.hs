@@ -6,6 +6,7 @@ module Lib.Util
   , inRangeF
   , count
   , chooseRandom
+  , both
   ) where
 
 import System.Random.Shuffle (shuffleM)
@@ -30,3 +31,6 @@ count p = length . filter p
 
 chooseRandom :: Int -> [a] -> IO [a]
 chooseRandom n xs = take n <$> shuffleM xs
+
+both :: (a -> b) -> (a, a) -> (b, b)
+both f (x, y) = (f x, f y)

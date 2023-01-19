@@ -1,4 +1,5 @@
 {-# LANGUAGE TupleSections #-}
+
 module Lib.Spritesheet
   ( allFrames
   , allFramesFlipped
@@ -12,11 +13,20 @@ module Lib.Spritesheet
   , FrameIndex
   ) where
 
-import Graphics.Gloss (Picture)
-import Codec.Picture (DynamicImage)
-import Lib.Image (dynWidth, dynHeight, cropFrame, cropFrameAndFlip, CropFn)
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (mapMaybe)
+import qualified Graphics.Gloss as G
+import Graphics.Gloss (Picture)
+import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
+import Codec.Picture.Extra (crop, flipHorizontally)
+import Codec.Picture (DynamicImage, dynamicMap, Image (imageWidth, imageHeight), convertRGBA8, PixelRGBA8)
+
+-- data Frame = Frame
+--   { index    :: FrameIndex
+--   , original :: Picture
+--   , flipped  :: Picture
+--   , size     :: FrameSize
+--   }
 
 type FrameIndex = (Int, Int)
 type FrameSize = (Int, Int)
@@ -25,13 +35,25 @@ type RowIndexConfig = (Int, Int, Int)   -- (row index, col index, frame count)
 
 type AllFramesFn = Int -> Int -> DynamicImage -> [Frame]
 
+type CropFn = Int -> Int -> Int -> Int -> DynamicImage -> G.Picture
+
+-- r and c are row and column of the frame in the spritesheet or tileset
+cropFrameDyn :: Int -> Int -> Int -> Int -> DynamicImage -> Image PixelRGBA8
+cropFrameDyn r c w h = crop (c * w) (r * h) w h . convertRGBA8
+
+cropFrame :: Int -> Int -> Int -> Int -> DynamicImage -> G.Picture
+cropFrame r c w h = fromImageRGBA8 . cropFrameDyn r c w h
+
+cropFrameAndFlip :: Int -> Int -> Int -> Int -> DynamicImage -> G.Picture
+cropFrameAndFlip r c w h = fromImageRGBA8 . flipHorizontally . cropFrameDyn r c w h
+
 -- w and h are width and height of a single frame
 allFramesFn :: CropFn -> Int -> Int -> DynamicImage -> [Frame]
 allFramesFn cropFn w h img = 
   [((r, c), cropFn r c w h img, (w, h)) | r <- [0..hFr-1], c <- [0..wFr-1]]
   where
-    wFr = dynWidth img `div` w
-    hFr = dynHeight img `div` h
+    wFr = dynamicMap imageWidth img `div` w
+    hFr = dynamicMap imageHeight img `div` h
 
 allFrames :: Int -> Int -> DynamicImage -> [Frame]
 allFrames = allFramesFn cropFrame

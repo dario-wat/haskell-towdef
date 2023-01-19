@@ -3,8 +3,8 @@
 import Lib.Window (windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss
 import Debug.Trace (traceShowId, traceShow, trace)
-import ThirdParty.GraphicsGlossGame (playInScene, picturing, Animation, noAnimation, scenes)
-import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkRight, walkLeft), firebugAnimations, firebugPictures, WalkingEnemyPictures (down))
+import ThirdParty.GraphicsGlossGame (playInScene, picturing, Animation, noAnimation, scenes, translating)
+import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkRight, walkLeft), firebugAnimations)
 import GameObjects.Sprite (mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
 import Lib.Level.Path (genRandomPath, addPathToGrid)
@@ -14,17 +14,16 @@ import qualified Lib.Animation as A
 
 
 data GameState = GameState
-  { bug :: S.Sprite
-  , an :: A.Animation
+  { --bug :: S.Sprite
+  an :: A.Animation
   }
 
 mkGameState :: IO GameState
 mkGameState = do
   fba <- firebugAnimations
-  fbp <- firebugPictures
   return $ GameState
-    { bug = mkNonAnimatedSprite 300 0 (-1) 0 (down fbp)
-    , an = A.mkAnimation (walkRight fba) (-1)
+    { --bug = mkNonAnimatedSprite 300 0 (-1) 0 (down fbp)
+    an = A.mkAnimation (walkRight fba) (-1)
     }
 
 window :: Display
@@ -48,7 +47,7 @@ main = do
   -- putStrLn . gridArrayStr . addPathToGrid emptyGrid =<< genRandomPath
   let
     animationScenes = scenes
-      [ A.animating (-300) 100 an
+      [ translating (const ((-300), 100)) $ A.animating an
       ]
   playInScene
     window 
@@ -58,9 +57,9 @@ main = do
     -- (picturing (\w -> S.draw $ bug w))
     (scenes [
       picturing $ const $ pictures [gridPic]
-      , picturing (S.draw . bug)
+      -- , picturing (S.draw . bug)
       , animationScenes])
     (\_ _ -> id) 
-    [ \_ _ (GameState bug an) -> GameState {bug = S.update bug, an}
-    , \now _ world -> world {an = A.update now (an world)}
+    [ -- \_ _ (GameState bug an) -> GameState {bug = S.update bug, an}
+    \now _ world -> world {an = A.update now (an world)}
     ]
