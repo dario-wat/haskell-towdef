@@ -1,10 +1,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
+import qualified Data.HashMap.Strict as HM
 import Lib.Window (windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss
 import Debug.Trace (traceShowId, traceShow, trace)
-import ThirdParty.GraphicsGlossGame (playInScene, picturing, Animation, noAnimation, scenes, translating)
-import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkRight, walkLeft), firebugAnimations)
+import ThirdParty.GraphicsGlossGame (playInScene, picturing, noAnimation, scenes, translating)
+import GameObjects.WalkingEnemy (WalkingEnemyAnimations(walkDown, walkRight, walkLeft), firebugAnimations, leafbugAnimations, magmaCrabAnimations, scorpionAnimations)
 import GameObjects.Sprite (mkNonAnimatedSprite)
 import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
 import Lib.Level.Path (genRandomPath, addPathToGrid)
@@ -14,16 +15,23 @@ import qualified Lib.Animation as A
 
 
 data GameState = GameState
-  { --bug :: S.Sprite
-  an :: A.Animation
+  { animations :: HM.HashMap String A.Animation
   }
 
 mkGameState :: IO GameState
 mkGameState = do
   fba <- firebugAnimations
+  lba <- leafbugAnimations
+  mca <- magmaCrabAnimations
+  sca <- scorpionAnimations
   return $ GameState
     { --bug = mkNonAnimatedSprite 300 0 (-1) 0 (down fbp)
-    an = A.mkAnimation (walkRight fba) (-1)
+      animations = HM.fromList
+        [ ("firebug", A.mkAnimation (walkRight fba) (-1))
+        , ("leafbug", A.mkAnimation (walkLeft lba) (-1))
+        , ("magma", A.mkAnimation (walkLeft mca) (-1))
+        , ("scorpion", A.mkAnimation (walkRight sca) (-1))
+        ]
     }
 
 window :: Display
@@ -38,7 +46,6 @@ background = white
 
 main :: IO ()
 main = do
-  fba <- firebugAnimations
   gs <- mkGameState
 
   path <- genRandomPath
@@ -47,7 +54,10 @@ main = do
   -- putStrLn . gridArrayStr . addPathToGrid emptyGrid =<< genRandomPath
   let
     animationScenes = scenes
-      [ translating (const ((-300), 100)) $ A.animating an
+      [ translating (const ((-300), 100)) $ A.animating (\w -> animations w HM.! "firebug")
+      , translating (const ((-300), 0)) $ A.animating (\w -> animations w HM.! "leafbug")
+      , translating (const ((-300), (-100))) $ A.animating (\w -> animations w HM.! "magma")
+      , translating (const ((-300), (-200))) $ A.animating (\w -> animations w HM.! "scorpion")
       ]
   playInScene
     window 
@@ -61,5 +71,5 @@ main = do
       , animationScenes])
     (\_ _ -> id) 
     [ -- \_ _ (GameState bug an) -> GameState {bug = S.update bug, an}
-    \now _ world -> world {an = A.update now (an world)}
+    \now _ world -> world {animations = HM.map (A.update now) $ animations world}
     ]

@@ -17,12 +17,12 @@ import Lib.Animation (MkAnimation)
 import ThirdParty.GraphicsGlossGame (noAnimation)
 
 data Sprite = Sprite
-  { x      :: Float
-  , y      :: Float
-  , velX   :: Float
-  , velY   :: Float
-  , pic    :: Picture
-  , mkAnim :: MkAnimation   -- TODO what is this?
+  { x      :: !Float
+  , y      :: !Float
+  , velX   :: !Float
+  , velY   :: !Float
+  , pic    :: !Picture
+  , mkAnim :: !MkAnimation   -- TODO what is this?
   }
 
 draw :: Sprite -> Picture
