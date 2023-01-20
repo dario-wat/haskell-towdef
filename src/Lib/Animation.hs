@@ -4,13 +4,14 @@ module Lib.Animation
   ( Animation   -- Exporting only the type
   , MkAnimation
   , animating
+  , draw
   , mkNoAnimation
   , mkAnimation
   , update
   ) where
 
 import Prelude hiding (repeat)
-import Data.Maybe (isNothing)
+import Data.Maybe (isNothing, fromMaybe)
 import qualified Graphics.Gloss as G
 import qualified ThirdParty.GraphicsGlossGame as G
 
@@ -37,13 +38,16 @@ mkAnimation makeA repeatA = Animation
   }
 
 update :: Float -> Animation -> Animation
-update now animation@Animation{current, make, repeat}
+update time animation@Animation{current, make, repeat}
   | not isCurrentFinished = animation
   | repeat == 0           = animation
-  | repeat == -1          = animation {current = make now}
-  | repeat > 0            = animation {current = make now, repeat = repeat - 1}
+  | repeat == -1          = animation {current = make time}
+  | repeat > 0            = animation {current = make time, repeat = repeat - 1}
   | otherwise             = animation
-  where isCurrentFinished = isNothing $ G.animationPicture current now
+  where isCurrentFinished = isNothing $ G.animationPicture current time
+
+draw :: Animation -> Float -> G.Picture
+draw Animation{current} = fromMaybe G.blank . G.animationPicture current
 
 animating :: (world -> Animation) -> G.Scene world
 animating worldToAnim = G.animating (current . worldToAnim) G.blank

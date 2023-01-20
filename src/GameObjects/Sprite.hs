@@ -31,9 +31,13 @@ data Sprite = Sprite
 -- type SpritePic = Sprite G.Picture
 -- type SpriteAnim = Sprite A.Animation
 
-draw :: Sprite -> G.Scene world
-draw Sprite{x, y, vis=Pic pic} = G.translating (const (x, y)) $ G.picturing (const pic)
-draw Sprite{x, y, vis=Anim anim} = G.translating (const (x, y)) $ A.animating (const anim)
+-- draw :: Sprite -> G.Scene world
+-- draw Sprite{x, y, vis=Pic pic} = G.translating (const (x, y)) $ G.picturing (const pic)
+-- draw Sprite{x, y, vis=Anim anim} = G.translating (const (x, y)) $ A.animating (const anim)
+
+draw :: Sprite -> Float -> G.Picture
+draw Sprite{x, y, vis=Pic pic}   _    = G.translate x y pic
+draw Sprite{x, y, vis=Anim anim} time = G.translate x y $ A.draw anim time
 
 -- spriting :: (world -> Sprite) -> G.Scene world
 -- spriting worldToSprite = A.animating (anim . worldToSprite)
@@ -47,12 +51,12 @@ update _ Sprite{x, y, velX, velY, vis=Pic pic} = Sprite
   , velY
   , vis = Pic pic
   }
-update now Sprite{x, y, velX, velY, vis=Anim anim} = Sprite 
+update time Sprite{x, y, velX, velY, vis=Anim anim} = Sprite 
   { x = x + velX
   , y = y + velY
   , velX
   , velY
-  , vis = Anim $ A.update now anim
+  , vis = Anim $ A.update time anim
   }
 
 mkSprite :: Float -> Float -> Float -> Float -> Visual -> Sprite

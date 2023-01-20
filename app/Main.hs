@@ -2,9 +2,9 @@
 
 import qualified Data.HashMap.Strict as HM
 import Lib.Window (windowSizeForInWindow, windowPositionForInWindow)
-import Graphics.Gloss
+import Graphics.Gloss hiding (play)
 import Debug.Trace (traceShowId, traceShow, trace)
-import ThirdParty.GraphicsGlossGame (playInScene, picturing, noAnimation, scenes, translating)
+import ThirdParty.GraphicsGlossGame (playInScene, play, picturing, noAnimation, scenes, translating, drawScene)
 import GameObjects.Enemy (EnemyAnimations(moveDown, moveRight, moveLeft), firebugAnimations, leafbugAnimations, magmaCrabAnimations, scorpionAnimations)
 import GameObjects.Sprite (mkNonAnimatedSprite, mkAnimatedSprite)
 import qualified GameObjects.Sprite as S
@@ -15,7 +15,8 @@ import qualified Lib.Animation as A
 
 
 data GameState = GameState
-  { animations :: HM.HashMap String A.Animation
+  { delay :: Float
+  , animations :: HM.HashMap String A.Animation
   , sprites :: HM.HashMap String S.Sprite
   }
 
@@ -37,6 +38,7 @@ mkGameState = do
         [ ("scorpion", mkAnimatedSprite 300 100 $ A.mkAnimation (moveRight sca) (-1))
 
         ]
+    , delay = 0
     }
 
 window :: Display
@@ -63,21 +65,34 @@ main = do
       , translating (const ((-300), 0)) $ A.animating (\w -> animations w HM.! "leafbug")
       , translating (const ((-300), (-100))) $ A.animating (\w -> animations w HM.! "magma")
       -- , translating (const ((-300), (-200))) $ A.animating (\w -> animations w HM.! "scorpion")
-      , S.draw $ sprites gs HM.! "scorpion"
+      -- , S.draw $ sprites gs HM.! "scorpion"
       ]
-  playInScene
+    allScenes = scenes 
+      [ picturing $ const $ pictures [gridPic]
+      -- , picturing (S.draw . bug)
+      , animationScenes
+      ]
+  play
     window 
     background 
     60
     gs 
     -- (picturing (\w -> S.draw $ bug w))
-    (scenes [
-      picturing $ const $ pictures [gridPic]
-      -- , picturing (S.draw . bug)
-      , animationScenes])
-    (\_ _ -> id) 
-    [ -- \_ _ (GameState bug an) -> GameState {bug = S.update bug, an}
-      \now _ world -> world 
-        { animations = HM.map (A.update now) $ animations world
-        , sprites = HM.map (S.update now) $ sprites world}
+    (\world -> pictures 
+      [ drawScene allScenes (delay world) world
+      , S.draw (sprites world HM.! "scorpion") (delay world)
+      ]
+    )
+    (\_ -> id) 
+    [  
+      -- It is crucial that time change is the first thing to happen 
+      -- in the update function, otherwise the animations will not
+      -- be updated properly.
+      \dt world -> world {delay = delay world + dt}
+     , \_ world -> world 
+        { animations = HM.map (A.update $ delay world) $ animations world
+        , sprites = HM.map (S.update $ delay world) $ sprites world
+        -- , delay = delay world + dt
+        }
+    
     ]

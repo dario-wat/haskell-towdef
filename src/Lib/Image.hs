@@ -27,5 +27,5 @@ thickRectangleWire thickness w h =
 -- NOTE works only on bitmaps
 boundingBox :: G.Picture -> G.Picture
 boundingBox (G.Bitmap bData) = G.color G.red $ thickRectangleWire 2 w h
-  where (w, h) = both fromIntegral $ G.bitmapSize bData
+                                 where (w, h) = both fromIntegral $ G.bitmapSize bData
 boundingBox _                = error "boundingBox: not a bitmap"

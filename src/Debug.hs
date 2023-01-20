@@ -21,13 +21,13 @@ import Lib.Spritesheet (Frame (original, Frame, size, index), allFrames, FrameIn
 import Data.Maybe (fromJust)
 import qualified ThirdParty.GraphicsGlossGame as G
 
-debugSpriteBoundingBox :: S.Sprite -> G.Scene world
+debugSpriteBoundingBox :: S.Sprite -> G.Picture
 debugSpriteBoundingBox S.Sprite{S.x, S.y, S.vis=S.Pic tile} = 
-  G.translating (const (x, y)) $ G.picturing (const $ boundingBox tile)
+  G.translate x y $ boundingBox tile
 debugSpriteBoundingBox _ = error "debugSpriteBoundingBox: not implemented for animated sprites"
 
-debugAndDrawSprite :: S.Sprite -> G.Scene world
-debugAndDrawSprite = G.scenes . sequence [debugSpriteBoundingBox, draw]
+debugAndDrawSprite :: S.Sprite -> G.Picture
+debugAndDrawSprite = G.pictures . sequence [debugSpriteBoundingBox, flip draw 0]
 
 debugPoint :: Float -> Float -> G.Picture
 debugPoint x y = G.translate x y $ G.color G.red $ G.circleSolid 5
@@ -42,7 +42,7 @@ coordinate x y = G.translate (x + xOff) y $ textScale $ G.text coordText
 debugPointWithCoords :: Float -> Float -> G.Picture
 debugPointWithCoords x y = G.pictures [debugPoint x y, coordinate x y]
 
-debugSpritesheet :: Int -> Int -> FilePath -> IO (G.Scene world)
+debugSpritesheet :: Int -> Int -> FilePath -> IO G.Picture
 debugSpritesheet w h imgPath = do
   img <- readPngOrError imgPath
   return $ debugSpritesheetFrames $ allFrames (w, h) img
@@ -52,11 +52,10 @@ debugSpritesheet w h imgPath = do
 --   img <- readPngOrError imgPath
 --   return $ debugSpritesheetFrames $ framesIndexed w h img coords
 
-debugSpritesheetFrames :: [Frame] -> G.Scene world
+debugSpritesheetFrames :: [Frame] -> G.Picture
 debugSpritesheetFrames fs =
-  G.scenes $ map (debugAndDrawSprite . sprite) fs
+  G.pictures $ map (debugAndDrawSprite . sprite) fs
   where 
-
     (xOff, yOff) = (-600, 300)
     padding = 10
     sprite Frame{original, index=(r, c), size=(w, h)} = mkStaticSprite 
@@ -64,11 +63,11 @@ debugSpritesheetFrames fs =
       (fromIntegral $ - r * (h + padding) + yOff)
       original
 
-debugTerrain :: IO (G.Scene world)
+debugTerrain :: IO G.Picture
 debugTerrain = do
   tObj <- T.terrainObjects
   tTil <- T.terrainTiles
-  return $ G.scenes $ map debugAndDrawSprite
+  return $ G.pictures $ map debugAndDrawSprite
     [ mkStaticSprite (-600)    300 $ T.picture $ T.horizontalBridge tObj
     , mkStaticSprite (-600)    100 $ T.picture $ T.verticalBridge tObj
     , mkStaticSprite (-650)  (-50) $ T.picture $ T.greenTree1 tObj
