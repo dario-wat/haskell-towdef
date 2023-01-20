@@ -46,8 +46,8 @@ update time animation@Animation{current, make, repeat}
   | otherwise             = animation
   where isCurrentFinished = isNothing $ G.animationPicture current time
 
-draw :: Animation -> Float -> G.Picture
-draw Animation{current} = fromMaybe G.blank . G.animationPicture current
+draw :: Float -> Animation -> G.Picture
+draw time Animation{current} = fromMaybe G.blank $ G.animationPicture current time
 
 animating :: (world -> Animation) -> G.Scene world
 animating worldToAnim = G.animating (current . worldToAnim) G.blank

@@ -17,9 +17,7 @@ import Lib.Image (readPngOrError, boundingBox)
 import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
-import Lib.Spritesheet (Frame (original, Frame, size, index), allFrames, FrameIndex)
-import Data.Maybe (fromJust)
-import qualified ThirdParty.GraphicsGlossGame as G
+import Lib.Spritesheet (Frame (original, Frame, size, index), allFrames)
 
 debugSpriteBoundingBox :: S.Sprite -> G.Picture
 debugSpriteBoundingBox S.Sprite{S.x, S.y, S.vis=S.Pic tile} = 
@@ -27,7 +25,7 @@ debugSpriteBoundingBox S.Sprite{S.x, S.y, S.vis=S.Pic tile} =
 debugSpriteBoundingBox _ = error "debugSpriteBoundingBox: not implemented for animated sprites"
 
 debugAndDrawSprite :: S.Sprite -> G.Picture
-debugAndDrawSprite = G.pictures . sequence [debugSpriteBoundingBox, flip draw 0]
+debugAndDrawSprite = G.pictures . sequence [debugSpriteBoundingBox, draw 0]
 
 debugPoint :: Float -> Float -> G.Picture
 debugPoint x y = G.translate x y $ G.color G.red $ G.circleSolid 5
