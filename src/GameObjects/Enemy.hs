@@ -6,6 +6,9 @@ module GameObjects.Enemy
   , scorpionAnimations
   ) where
 
+-- TODO
+-- 1. Add flying enemies and all other logic
+
 import ThirdParty.GraphicsGlossGame (animation)
 import Lib.Image (readPngOrError)
 import Lib.Animation (MkAnimation)

@@ -5,50 +5,73 @@ module GameObjects.Sprite
   , update
   , mkSprite
   , mkNonAnimatedSprite
+  , mkAnimatedSprite
   , mkStaticSprite
   , mkDefaultSprite
   , Sprite(..)
+  , Visual(..)
   ) where
 
 -- TODO WIP
 
-import Graphics.Gloss (Picture, translate, blank)
-import Lib.Animation (MkAnimation)
-import ThirdParty.GraphicsGlossGame (noAnimation)
+import qualified Graphics.Gloss as G
+import qualified Lib.Animation as A
+import qualified ThirdParty.GraphicsGlossGame as G
+
+data Visual = Pic G.Picture | Anim A.Animation
 
 data Sprite = Sprite
   { x      :: !Float
   , y      :: !Float
   , velX   :: !Float
   , velY   :: !Float
-  , pic    :: !Picture
-  , mkAnim :: !MkAnimation   -- TODO what is this?
+  , vis    :: !Visual
   }
 
-draw :: Sprite -> Picture
-draw (Sprite x y _ _ pic _) = translate x y pic
+-- type SpritePic = Sprite G.Picture
+-- type SpriteAnim = Sprite A.Animation
 
-update :: Sprite -> Sprite
-update (Sprite x y velX velY pic mkAnim) = Sprite x' y' velX velY pic mkAnim
-  where
-    x' = x + velX
-    y' = y + velY
+draw :: Sprite -> G.Scene world
+draw Sprite{x, y, vis=Pic pic} = G.translating (const (x, y)) $ G.picturing (const pic)
+draw Sprite{x, y, vis=Anim anim} = G.translating (const (x, y)) $ A.animating (const anim)
 
--- TODO should be removed
-mkNoAnimationFn :: MkAnimation
-mkNoAnimationFn _ = noAnimation
+-- spriting :: (world -> Sprite) -> G.Scene world
+-- spriting worldToSprite = A.animating (anim . worldToSprite)
+--   where worldToPos world = (x $ worldToSprite world, y $ worldToSprite world)
 
-mkSprite :: Float -> Float -> Float -> Float -> Picture -> MkAnimation -> Sprite
-mkSprite x y velX velY pic mkAnim = Sprite {x, y, velX, velY, pic, mkAnim}
+update :: Float -> Sprite -> Sprite
+update _ Sprite{x, y, velX, velY, vis=Pic pic} = Sprite 
+  { x = x + velX
+  , y = y + velY
+  , velX
+  , velY
+  , vis = Pic pic
+  }
+update now Sprite{x, y, velX, velY, vis=Anim anim} = Sprite 
+  { x = x + velX
+  , y = y + velY
+  , velX
+  , velY
+  , vis = Anim $ A.update now anim
+  }
 
-mkNonAnimatedSprite :: Float -> Float -> Float -> Float -> Picture -> Sprite
-mkNonAnimatedSprite x y velX velY pic = mkSprite x y velX velY pic mkNoAnimationFn
-
-mkStaticSprite :: Float -> Float -> Picture -> Sprite
-mkStaticSprite x y pic = mkSprite x y 0 0 pic mkNoAnimationFn
+mkSprite :: Float -> Float -> Float -> Float -> Visual -> Sprite
+mkSprite x y velX velY vis = Sprite 
+  { x
+  , y
+  , velX
+  , velY
+  , vis
+  }
 
 mkDefaultSprite :: Sprite
-mkDefaultSprite = mkSprite 0 0 0 0 blank mkNoAnimationFn
+mkDefaultSprite = mkSprite 0 0 0 0 (Pic G.blank)
 
--- repeatSpriteAnimation :: Sprite -> MkAnimation -> Float -> Sprite
--- repeatSpriteAnimation (Sprite x y pic _) newAnim t = Sprite x y pic (newAnim t)
+mkNonAnimatedSprite :: Float -> Float -> Float -> Float -> G.Picture -> Sprite
+mkNonAnimatedSprite x y velX velY pic = mkSprite x y velX velY (Pic pic)
+
+mkStaticSprite :: Float -> Float -> G.Picture -> Sprite
+mkStaticSprite x y pic = mkSprite x y 0 0 (Pic pic)
+
+mkAnimatedSprite :: Float -> Float -> A.Animation -> Sprite
+mkAnimatedSprite x y anim = mkSprite x y 0 0 (Anim anim)

@@ -18,12 +18,16 @@ import GameObjects.Sprite (draw, mkStaticSprite)
 import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
 import Lib.Spritesheet (Frame (original, Frame, size, index), allFrames, FrameIndex)
+import Data.Maybe (fromJust)
+import qualified ThirdParty.GraphicsGlossGame as G
 
-debugSpriteBoundingBox :: S.Sprite -> G.Picture
-debugSpriteBoundingBox (S.Sprite x y _ _ tile _) = G.translate x y $ boundingBox tile
+debugSpriteBoundingBox :: S.Sprite -> G.Scene world
+debugSpriteBoundingBox S.Sprite{S.x, S.y, S.vis=S.Pic tile} = 
+  G.translating (const (x, y)) $ G.picturing (const $ boundingBox tile)
+debugSpriteBoundingBox _ = error "debugSpriteBoundingBox: not implemented for animated sprites"
 
-debugAndDrawSprite :: S.Sprite -> G.Picture
-debugAndDrawSprite = G.pictures . sequence [debugSpriteBoundingBox, draw]
+debugAndDrawSprite :: S.Sprite -> G.Scene world
+debugAndDrawSprite = G.scenes . sequence [debugSpriteBoundingBox, draw]
 
 debugPoint :: Float -> Float -> G.Picture
 debugPoint x y = G.translate x y $ G.color G.red $ G.circleSolid 5
@@ -38,7 +42,7 @@ coordinate x y = G.translate (x + xOff) y $ textScale $ G.text coordText
 debugPointWithCoords :: Float -> Float -> G.Picture
 debugPointWithCoords x y = G.pictures [debugPoint x y, coordinate x y]
 
-debugSpritesheet :: Int -> Int -> FilePath -> IO G.Picture
+debugSpritesheet :: Int -> Int -> FilePath -> IO (G.Scene world)
 debugSpritesheet w h imgPath = do
   img <- readPngOrError imgPath
   return $ debugSpritesheetFrames $ allFrames (w, h) img
@@ -48,9 +52,9 @@ debugSpritesheet w h imgPath = do
 --   img <- readPngOrError imgPath
 --   return $ debugSpritesheetFrames $ framesIndexed w h img coords
 
-debugSpritesheetFrames :: [Frame] -> G.Picture
+debugSpritesheetFrames :: [Frame] -> G.Scene world
 debugSpritesheetFrames fs =
-  G.pictures $ map (debugAndDrawSprite . sprite) fs
+  G.scenes $ map (debugAndDrawSprite . sprite) fs
   where 
 
     (xOff, yOff) = (-600, 300)
@@ -60,11 +64,11 @@ debugSpritesheetFrames fs =
       (fromIntegral $ - r * (h + padding) + yOff)
       original
 
-debugTerrain :: IO G.Picture
+debugTerrain :: IO (G.Scene world)
 debugTerrain = do
   tObj <- T.terrainObjects
   tTil <- T.terrainTiles
-  return $ G.pictures $ map debugAndDrawSprite
+  return $ G.scenes $ map debugAndDrawSprite
     [ mkStaticSprite (-600)    300 $ T.picture $ T.horizontalBridge tObj
     , mkStaticSprite (-600)    100 $ T.picture $ T.verticalBridge tObj
     , mkStaticSprite (-650)  (-50) $ T.picture $ T.greenTree1 tObj

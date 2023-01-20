@@ -6,8 +6,8 @@ import Graphics.Gloss
 import Debug.Trace (traceShowId, traceShow, trace)
 import ThirdParty.GraphicsGlossGame (playInScene, picturing, noAnimation, scenes, translating)
 import GameObjects.Enemy (EnemyAnimations(moveDown, moveRight, moveLeft), firebugAnimations, leafbugAnimations, magmaCrabAnimations, scorpionAnimations)
-import GameObjects.Sprite (mkNonAnimatedSprite)
-import qualified GameObjects.Sprite as S (Sprite(..), update, draw)
+import GameObjects.Sprite (mkNonAnimatedSprite, mkAnimatedSprite)
+import qualified GameObjects.Sprite as S
 import Lib.Level.Path (genRandomPath, addPathToGrid)
 import Lib.Level.Grid (emptyGrid)
 import Lib.Level.MapGenerator (picturizeGrid)
@@ -16,6 +16,7 @@ import qualified Lib.Animation as A
 
 data GameState = GameState
   { animations :: HM.HashMap String A.Animation
+  , sprites :: HM.HashMap String S.Sprite
   }
 
 mkGameState :: IO GameState
@@ -30,7 +31,11 @@ mkGameState = do
         [ ("firebug", A.mkAnimation (moveRight fba) (-1))
         , ("leafbug", A.mkAnimation (moveLeft lba) (-1))
         , ("magma", A.mkAnimation (moveLeft mca) (-1))
-        , ("scorpion", A.mkAnimation (moveRight sca) (-1))
+        -- , ("scorpion", A.mkAnimation (moveRight sca) (-1))
+        ]
+    , sprites = HM.fromList
+        [ ("scorpion", mkAnimatedSprite 300 100 $ A.mkAnimation (moveRight sca) (-1))
+
         ]
     }
 
@@ -57,7 +62,8 @@ main = do
       [ translating (const ((-300), 100)) $ A.animating (\w -> animations w HM.! "firebug")
       , translating (const ((-300), 0)) $ A.animating (\w -> animations w HM.! "leafbug")
       , translating (const ((-300), (-100))) $ A.animating (\w -> animations w HM.! "magma")
-      , translating (const ((-300), (-200))) $ A.animating (\w -> animations w HM.! "scorpion")
+      -- , translating (const ((-300), (-200))) $ A.animating (\w -> animations w HM.! "scorpion")
+      , S.draw $ sprites gs HM.! "scorpion"
       ]
   playInScene
     window 
@@ -71,5 +77,7 @@ main = do
       , animationScenes])
     (\_ _ -> id) 
     [ -- \_ _ (GameState bug an) -> GameState {bug = S.update bug, an}
-    \now _ world -> world {animations = HM.map (A.update now) $ animations world}
+      \now _ world -> world 
+        { animations = HM.map (A.update now) $ animations world
+        , sprites = HM.map (S.update now) $ sprites world}
     ]

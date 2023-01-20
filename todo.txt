@@ -9,5 +9,4 @@
 - Generate terraine from the path
 - Mapping module
 - Remove useless debug code
-- Use constants for tile characters
 - Add rounded corners

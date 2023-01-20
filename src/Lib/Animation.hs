@@ -46,4 +46,4 @@ update now animation@Animation{current, make, repeat}
   where isCurrentFinished = isNothing $ G.animationPicture current now
 
 animating :: (world -> Animation) -> G.Scene world
-animating worldAnim = G.animating (current . worldAnim) G.blank
+animating worldToAnim = G.animating (current . worldToAnim) G.blank

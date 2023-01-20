@@ -15,6 +15,10 @@ import Lib.Util (chooseRandom)
 import qualified GameObjects.Terrain as T
 import Graphics.Gloss (pictures)
 
+-- TODO
+-- Make corners rounded
+-- Make enemies follow the path
+
 -- TODO what is this?
 generateGrid :: IO Grid
 generateGrid = addPathToGrid emptyGrid <$> genRandomPath
