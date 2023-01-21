@@ -1,6 +1,7 @@
 module Lib.Level.Grid 
   ( Grid(..)
   , gridCenterOf
+  , gridCellOf
   , gridCols
   , gridRows
   , emptyGrid
@@ -40,6 +41,12 @@ gridCenterOf (x, y) (w, h) = (centerX, centerY)
     centerX = gridX x + fromIntegral w * cellSize / 2
     centerY = gridY y + fromIntegral h * cellSize / 2
 
+gridCellOf :: (Float, Float) -> (Int, Int)
+gridCellOf (x, y) = (cellX, cellY)
+  where
+    cellX = floor $ (x - gridStartX) / cellSize
+    cellY = floor $ (y - gridStartY) / cellSize
+
 emptyGrid :: Grid
 emptyGrid = Grid $ listArray ((0, 0), (gridCols - 1, gridRows - 1)) $ repeat Empty
 
@@ -59,11 +66,11 @@ gridHeight = snd gridDimensions
 gridPadding :: (Float, Float)
 gridPadding = (windowWidth - gridWidth, windowHeight - gridHeight)
 
--- | x coordinate of the leftmost cell
+-- | x coordinate of the left edge
 gridStartX :: Float
 gridStartX = x' $ fst gridPadding / 2
 
--- | y coordinate of the topmost cell
+-- | y coordinate of the top edge
 gridStartY :: Float
 gridStartY = y' (snd gridPadding / 2) + gridYOffset
   where gridYOffset = -20

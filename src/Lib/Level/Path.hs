@@ -2,19 +2,29 @@
 {-# LANGUAGE TupleSections #-}
 
 module Lib.Level.Path 
-  ( genRandomPath
+  ( Path
+  , genRandomPath
   , addPathToGrid
+  , nextDirection
+  , nextPoint
+  , nextDirectionFromPoint
   ) where
 
+import Prelude hiding (Left, Right)
 import System.Random (randomRIO)
 import Data.Array ((//))
+import Data.Bifunctor (Bifunctor(first))
 import Data.Ix (Ix(inRange))
 import Data.List (group, nub)
 import Data.Maybe (mapMaybe, isJust)
 import qualified Control.Monad.HT as M (until)
-import Lib.Level.Grid (gridCols, gridRows, Grid(..))
+import Lib.Level.Grid (gridCols, gridRows, Grid(..), gridCellOf)
 import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl, count)
 import qualified Lib.Level.TileType as TT
+import Debug.Trace (traceShowId)
+
+data Direction = Up | Down | Left | Right
+  deriving (Eq, Show)
 
 type Point = (Int, Int)
 type Path = [Point]
@@ -72,13 +82,33 @@ addPathToGrid grid path = Grid $ unGrid grid // pathIndices // turnIndices // cr
   where 
     pathIndices = concatMap markGridRoads $ pathSegments path
     markGridRoads ((x1, y1), (x2, y2))
-      | x1 == x2  = [((x1, y), TT.RoadVertical) | y <- [min y1 y2 .. max y1 y2]]
+      | x1 == x2  = [((x1, y), TT.RoadVertical)   | y <- [min y1 y2 .. max y1 y2]]
       | y1 == y2  = [((x, y1), TT.RoadHorizontal) | x <- [min x1 x2 .. max x1 x2]]
-      | otherwise = error "gridifyPath: impossible"
+      | otherwise = error "markGridRoads: impossible"
     turnIndices = mapMaybe (uncurry segmentCornerType) $ allSegmentPairs path
     crossingIndices = 
       map (,TT.RoadCrossing) $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
 
+nextDirection :: (Float, Float) -> Path -> (Direction, Path)
+nextDirection pos path = first (nextDirectionFromPoint pos) $ nextPoint (gridCellOf pos) path
+
+nextPoint :: Point -> Path -> (Point, Path)
+nextPoint curr []       = (curr, [])
+nextPoint curr (p:path) 
+  | curr /= p = (p, p:path)
+  | otherwise = (p, path)
+
+nextPointF :: (Float, Float) -> Path -> (Point, Path)
+nextPointF = nextPoint . gridCellOf
+
+nextDirectionFromPoint :: (Float, Float) -> Point -> Direction
+nextDirectionFromPoint pos (xn, yn)
+  | traceShowId xc == traceShowId xn && traceShowId yc < traceShowId yn = Up
+  | xc == xn && yc > yn = Down
+  | xc < xn && yc == yn = Right
+  | xc > xn && yc == yn = Left
+  | otherwise           = error "nextDirectionFromPoint: impossible"
+  where (xc, yc) = gridCellOf pos
 
 -------------------------------------------------------------------------------
 -- Point
