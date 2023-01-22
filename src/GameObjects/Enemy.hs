@@ -10,7 +10,6 @@ module GameObjects.Enemy
 
 import Prelude hiding (Left, Right)
 import qualified Graphics.Gloss as G
-import qualified GameObjects.GameObject as GO
 import qualified GameObjects.Sprite as S
 import qualified Lib.Animation as A
 import qualified Lib.Enemy.Animations as E
@@ -39,10 +38,6 @@ instance Show Enemy where
     ", remainingPath = " ++ show remainingPath ++ 
     ", direction = " ++ show direction ++
     " }"
-
-instance GO.GameObject Enemy where
-  update = update
-  draw   = draw
 
 speed :: Float
 speed = 3

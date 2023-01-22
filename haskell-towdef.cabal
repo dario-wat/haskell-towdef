@@ -28,7 +28,6 @@ library
       Const
       Debug
       GameObjects.Enemy
-      GameObjects.GameObject
       GameObjects.Sprite
       GameObjects.Terrain
       Lib.Animation

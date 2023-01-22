@@ -13,7 +13,6 @@ module GameObjects.Sprite
   ) where
 
 import qualified Graphics.Gloss as G
-import qualified GameObjects.GameObject as GO
 import qualified Lib.Animation as A
 
 data Visual = Pic G.Picture | Anim A.Animation
@@ -34,10 +33,6 @@ instance Show Sprite where
     ", velX = " ++ show velX ++ 
     ", velY = " ++ show velY ++ 
     " }"
-
-instance GO.GameObject Sprite where
-  update = update
-  draw   = draw
 
 draw :: Float -> Sprite -> G.Picture
 draw _    Sprite{x, y, vis=Pic pic}   = G.translate x y pic
