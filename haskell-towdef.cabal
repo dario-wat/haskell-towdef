@@ -29,6 +29,7 @@ library
       Debug
       GameObjects.Enemy
       GameObjects.EnemyAnimations
+      GameObjects.GameObject
       GameObjects.Sprite
       GameObjects.Terrain
       Lib.Animation

@@ -9,10 +9,10 @@ module GameObjects.Enemy
   ) where
 
 import qualified Graphics.Gloss as G
+import qualified GameObjects.GameObject as GO
 import qualified GameObjects.Sprite as S
 import Lib.Util (distance)
 import qualified Lib.Level.Path as P
-import Debug.Trace (traceShow)
 
 -- TODO
 -- 1. Enemy types
@@ -23,7 +23,11 @@ import Debug.Trace (traceShow)
 data Enemy = Enemy
   { sprite :: S.Sprite
   , remainingPath :: G.Path
-  }
+  } deriving (Show)
+
+instance GO.GameObject Enemy where
+  update = update
+  draw   = draw
 
 speed :: Float
 speed = 3
