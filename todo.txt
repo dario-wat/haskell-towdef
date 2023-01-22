@@ -9,3 +9,4 @@
 - Cleanup export list at the end once debug is removed
 - Z coord
 - Make money and use it to upgrade towers
+- Enemy generator, and procedural generation

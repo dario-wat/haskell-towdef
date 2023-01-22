@@ -10,10 +10,10 @@ module GameObjects.Enemy
 
 import Prelude hiding (Left, Right)
 import qualified Graphics.Gloss as G
-import qualified GameObjects.EnemyAnimations as EA
 import qualified GameObjects.GameObject as GO
 import qualified GameObjects.Sprite as S
 import qualified Lib.Animation as A
+import qualified Lib.Enemy.Animations as E
 import qualified Lib.Level.Path as P
 import Lib.Util (distance, angle, inRangeF)
 
@@ -28,7 +28,7 @@ data Direction = Left | Right | Up | Down
 data Enemy = Enemy
   { sprite        :: !S.Sprite
   , remainingPath :: !G.Path
-  , animationSet  :: !EA.EnemyAnimations
+  , animationSet  :: !E.EnemyAnimations
   , direction     :: !Direction
   } 
 
@@ -50,10 +50,10 @@ speed = 3
 distanceThreshold :: Float
 distanceThreshold = 3
 
-mkFromGridPath :: S.Sprite -> P.Path -> EA.EnemyAnimations -> Enemy
+mkFromGridPath :: S.Sprite -> P.Path -> E.EnemyAnimations -> Enemy
 mkFromGridPath sprite path = mkEnemy sprite $ P.toGlossPath path
 
-mkEnemy :: S.Sprite -> G.Path -> EA.EnemyAnimations -> Enemy
+mkEnemy :: S.Sprite -> G.Path -> E.EnemyAnimations -> Enemy
 mkEnemy sprite path animationSet = Enemy 
   { sprite        = sprite { S.vis = S.Anim $ directionAnimation Right animationSet }
   , remainingPath = path
@@ -105,8 +105,8 @@ faceDirectionOfMovement enemy@Enemy{sprite, animationSet, direction}
       | inRangeF ( 3*pi/4,  5*pi/4) movementAngle = Left  -- Hack to fix rounding errors
       | otherwise                                 = error "impossible angle"
 
-directionAnimation :: Direction -> EA.EnemyAnimations -> A.Animation
-directionAnimation Right = A.mkInfAnimation . EA.moveRight 
-directionAnimation Left  = A.mkInfAnimation . EA.moveLeft  
-directionAnimation Up    = A.mkInfAnimation . EA.moveUp    
-directionAnimation Down  = A.mkInfAnimation . EA.moveDown
+directionAnimation :: Direction -> E.EnemyAnimations -> A.Animation
+directionAnimation Right = A.mkInfAnimation . E.moveRight 
+directionAnimation Left  = A.mkInfAnimation . E.moveLeft  
+directionAnimation Up    = A.mkInfAnimation . E.moveUp    
+directionAnimation Down  = A.mkInfAnimation . E.moveDown

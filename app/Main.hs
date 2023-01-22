@@ -5,7 +5,7 @@ import Lib.Window (windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss hiding (play, Path)
 import qualified Graphics.Gloss as G
 import ThirdParty.GraphicsGlossGame (play, picturing, scenes, drawScene)
-import qualified GameObjects.EnemyAnimations as E
+import qualified Lib.Enemy.Animations as E
 import qualified GameObjects.Enemy as E
 import qualified GameObjects.Sprite as S
 import Lib.Level.Path (genRandomPath, addPathToGrid, Path)

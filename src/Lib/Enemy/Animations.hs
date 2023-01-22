@@ -1,5 +1,8 @@
-module GameObjects.EnemyAnimations
+{-# LANGUAGE TupleSections #-}
+
+module Lib.Enemy.Animations
   ( EnemyAnimations(..)
+  , EnemyAnimationsMap
   , firebugAnimations
   , leafbugAnimations
   , magmaCrabAnimations
@@ -8,25 +11,18 @@ module GameObjects.EnemyAnimations
   , firewaspAnimations
   , flyingLocustAnimations
   , voidbutterflyAnimations
-  , animationFromType
+  , allEnemyAnimations
   ) where
 
+import Data.HashMap.Strict (HashMap, fromList)
 import Graphics.Gloss (Picture)
 import ThirdParty.GraphicsGlossGame (animation)
+import Lib.Enemy.Types (EnemyType(..))
 import Lib.Image (readPngOrError)
 import Lib.Animation (MkAnimation)
 import Lib.Spritesheet (animFrames, animFramesFlip)
 
--- TODO do I need this really?
-data EnemyType = 
-  Firebug 
-  | Leafbug 
-  | MagmaCrab 
-  | Scorpion 
-  | Clampbeetle 
-  | Firewasp 
-  | FlyingLocust 
-  | Voidbutterfly
+type EnemyAnimationsMap = HashMap EnemyType EnemyAnimations
 
 data EnemyAnimations = EnemyAnimations
   { moveDown  :: !MkAnimation
@@ -165,12 +161,17 @@ voidbutterflyAnimations = do
     }
   where size = (64, 64)
 
-animationFromType :: EnemyType -> IO EnemyAnimations
-animationFromType Firebug = firebugAnimations
-animationFromType Leafbug = leafbugAnimations
-animationFromType MagmaCrab = magmaCrabAnimations
-animationFromType Scorpion = scorpionAnimations
-animationFromType Clampbeetle = clampbeetleAnimations
-animationFromType Firewasp = firewaspAnimations
-animationFromType FlyingLocust = flyingLocustAnimations
-animationFromType Voidbutterfly = voidbutterflyAnimations
+allEnemyAnimations :: IO EnemyAnimationsMap
+allEnemyAnimations =
+  fromList <$> mapM extractSndM
+    [ (Firebug, firebugAnimations)
+    , (Leafbug, leafbugAnimations)
+    , (MagmaCrab, magmaCrabAnimations)
+    , (Scorpion, scorpionAnimations)
+    , (Clampbeetle, clampbeetleAnimations)
+    , (Firewasp, firewaspAnimations)
+    , (FlyingLocust, flyingLocustAnimations)
+    , (Voidbutterfly, voidbutterflyAnimations)
+    ]
+  where 
+    extractSndM (a, ioB) = (a,) <$> ioB

@@ -28,11 +28,13 @@ library
       Const
       Debug
       GameObjects.Enemy
-      GameObjects.EnemyAnimations
       GameObjects.GameObject
       GameObjects.Sprite
       GameObjects.Terrain
       Lib.Animation
+      Lib.Enemy.Animations
+      Lib.Enemy.Spawner
+      Lib.Enemy.Types
       Lib.Image
       Lib.Level.Grid
       Lib.Level.MapGenerator
@@ -54,6 +56,7 @@ library
     , array
     , base >=4.7 && <5
     , gloss
+    , hashable
     , linear
     , random
     , random-shuffle
@@ -75,6 +78,7 @@ executable haskell-towdef-exe
     , array
     , base >=4.7 && <5
     , gloss
+    , hashable
     , haskell-towdef
     , linear
     , random
