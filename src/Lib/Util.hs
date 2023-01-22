@@ -8,6 +8,7 @@ module Lib.Util
   , chooseRandom
   , both
   , distance
+  , angle
   ) where
 
 import System.Random.Shuffle (shuffleM)
@@ -38,3 +39,6 @@ both f (x, y) = (f x, f y)
 
 distance :: (Float, Float) -> (Float, Float) -> Float
 distance (x1, y1) (x2, y2) = sqrt $ (x1 - x2) ^ (2 :: Int) + (y1 - y2) ^ (2 :: Int)
+
+angle :: (Float, Float) -> (Float, Float) -> Float
+angle (x1, y1) (x2, y2) = atan2 (y2 - y1) (x2 - x1)

@@ -5,9 +5,10 @@ module Lib.Animation
   , MkAnimation
   , animating
   , draw
+  , update
   , mkNoAnimation
   , mkAnimation
-  , update
+  , mkInfAnimation
   ) where
 
 import Prelude hiding (repeat)
@@ -30,12 +31,15 @@ mkNoAnimation = Animation
   , repeat  = 0
   }
 
-mkAnimation :: (Float -> G.Animation) -> Int -> Animation
+mkAnimation :: MkAnimation -> Int -> Animation
 mkAnimation makeA repeatA = Animation
   { current = makeA 0
   , make    = makeA
   , repeat  = repeatA
   }
+
+mkInfAnimation :: MkAnimation -> Animation
+mkInfAnimation makeA = mkAnimation makeA (-1)
 
 update :: Float -> Animation -> Animation
 update time animation@Animation{current, make, repeat}

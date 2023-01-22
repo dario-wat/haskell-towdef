@@ -8,6 +8,7 @@ module GameObjects.EnemyAnimations
   , firewaspAnimations
   , flyingLocustAnimations
   , voidbutterflyAnimations
+  , animationFromType
   ) where
 
 import Graphics.Gloss (Picture)
@@ -15,6 +16,17 @@ import ThirdParty.GraphicsGlossGame (animation)
 import Lib.Image (readPngOrError)
 import Lib.Animation (MkAnimation)
 import Lib.Spritesheet (animFrames, animFramesFlip)
+
+-- TODO do I need this really?
+data EnemyType = 
+  Firebug 
+  | Leafbug 
+  | MagmaCrab 
+  | Scorpion 
+  | Clampbeetle 
+  | Firewasp 
+  | FlyingLocust 
+  | Voidbutterfly
 
 data EnemyAnimations = EnemyAnimations
   { moveDown  :: !MkAnimation
@@ -152,3 +164,13 @@ voidbutterflyAnimations = do
     , dieLeft   = enemyAnimation (animFramesFlip size (8, 0, 12) img)
     }
   where size = (64, 64)
+
+animationFromType :: EnemyType -> IO EnemyAnimations
+animationFromType Firebug = firebugAnimations
+animationFromType Leafbug = leafbugAnimations
+animationFromType MagmaCrab = magmaCrabAnimations
+animationFromType Scorpion = scorpionAnimations
+animationFromType Clampbeetle = clampbeetleAnimations
+animationFromType Firewasp = firewaspAnimations
+animationFromType FlyingLocust = flyingLocustAnimations
+animationFromType Voidbutterfly = voidbutterflyAnimations

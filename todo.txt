@@ -1,13 +1,11 @@
 - Animate everything
-- Make bugs follow the path
-- Make bugs face the direction they are moving at
 - Towers (create, upgrade, shoot bullets)
 - Enemies take damage and die
 - Generate maps and paths
 - Water
-- Generate path
 - Generate terraine from the path
-- Mapping module
 - Remove useless debug code
 - Add rounded corners
 - Cleanup export list at the end once debug is removed
+- Z coord
+- Make money and use it to upgrade towers

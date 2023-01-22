@@ -3,6 +3,7 @@
 import qualified Data.HashMap.Strict as HM
 import Lib.Window (windowSizeForInWindow, windowPositionForInWindow)
 import Graphics.Gloss hiding (play, Path)
+import qualified Graphics.Gloss as G
 import ThirdParty.GraphicsGlossGame (play, picturing, scenes, drawScene)
 import qualified GameObjects.EnemyAnimations as E
 import qualified GameObjects.Enemy as E
@@ -44,7 +45,7 @@ mkGameState = do
         , ("flyinglocust", S.mkAnimatedSprite 200 (-200) $ A.mkAnimation (E.moveRight fla) (-1))
         , ("voidbutterfly", S.mkAnimatedSprite 200 (-300) $ A.mkAnimation (E.dieRight vba) (-1))
         ]
-    , enemy = E.mkFromGridPath (S.mkAnimatedSprite sx sy $ A.mkAnimation (E.moveRight sca) (-1)) path
+    , enemy = E.mkFromGridPath (S.mkStaticSprite sx sy G.blank) path sca
     }
 
 window :: Display
