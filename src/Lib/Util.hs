@@ -7,6 +7,7 @@ module Lib.Util
   , count
   , chooseRandom
   , both
+  , distance
   ) where
 
 import System.Random.Shuffle (shuffleM)
@@ -34,3 +35,6 @@ chooseRandom n xs = take n <$> shuffleM xs
 
 both :: (a -> b) -> (a, a) -> (b, b)
 both f (x, y) = (f x, f y)
+
+distance :: (Float, Float) -> (Float, Float) -> Float
+distance (x1, y1) (x2, y2) = sqrt $ (x1 - x2) ^ (2 :: Int) + (y1 - y2) ^ (2 :: Int)
