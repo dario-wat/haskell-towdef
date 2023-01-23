@@ -9,6 +9,7 @@ module Lib.Util
   , both
   , distance
   , angle
+  , headOrDefault
   ) where
 
 import System.Random.Shuffle (shuffleM)
@@ -42,3 +43,7 @@ distance (x1, y1) (x2, y2) = sqrt $ (x1 - x2) ^ (2 :: Int) + (y1 - y2) ^ (2 :: I
 
 angle :: (Float, Float) -> (Float, Float) -> Float
 angle (x1, y1) (x2, y2) = atan2 (y2 - y1) (x2 - x1)
+
+headOrDefault :: a -> [a] -> a
+headOrDefault d [] = d
+headOrDefault _ (x:_) = x

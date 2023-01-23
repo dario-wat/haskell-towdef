@@ -4,7 +4,6 @@ module GameObjects.Enemy
   ( Enemy(..)
   , update
   , draw
-  , mkEnemy
   , mkFromGridPath
   ) where
 
@@ -14,7 +13,7 @@ import qualified GameObjects.Sprite as S
 import qualified Lib.Animation as A
 import qualified Lib.Enemy.Animations as E
 import qualified Lib.Level.Path as P
-import Lib.Util (distance, angle, inRangeF)
+import Lib.Util (distance, angle, inRangeF, headOrDefault)
 
 -- TODO
 -- 1. Enemy types
@@ -45,16 +44,17 @@ speed = 3
 distanceThreshold :: Float
 distanceThreshold = 3
 
-mkFromGridPath :: S.Sprite -> P.Path -> E.EnemyAnimations -> Enemy
-mkFromGridPath sprite path = mkEnemy sprite $ P.toGlossPath path
+mkFromGridPath :: P.Path -> E.EnemyAnimations -> Enemy
+mkFromGridPath path = mkEnemy (P.toGlossPath path)
 
-mkEnemy :: S.Sprite -> G.Path -> E.EnemyAnimations -> Enemy
-mkEnemy sprite path animationSet = Enemy 
-  { sprite        = sprite { S.vis = S.Anim $ directionAnimation Right animationSet }
+mkEnemy :: G.Path -> E.EnemyAnimations -> Enemy
+mkEnemy path animationSet = Enemy 
+  { sprite        = S.mkAnimatedSprite x y $ directionAnimation Right animationSet
   , remainingPath = path
   , animationSet
   , direction     = Right 
   }
+  where (x, y) = headOrDefault (0, 0) path
 
 update :: Float -> Enemy -> Enemy
 update time = updateEnemySprite time 

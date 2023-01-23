@@ -6,7 +6,9 @@ import Graphics.Gloss hiding (play, Path)
 import qualified Graphics.Gloss as G
 import ThirdParty.GraphicsGlossGame (play, picturing, scenes, drawScene)
 import qualified Lib.Enemy.Animations as E
-import qualified GameObjects.Enemy as E
+import qualified Lib.Enemy.Types as E
+import qualified Lib.Enemy.Manager as E
+import qualified GameObjects.Enemy as E hiding (update, draw)
 import qualified GameObjects.Sprite as S
 import Lib.Level.Path (genRandomPath, addPathToGrid, Path)
 import Lib.Level.Grid (emptyGrid, debugGrid, gridCellOf, gridCenterOf)
@@ -19,11 +21,12 @@ data GameState = GameState
   { time :: Float
   , path :: Path
   , sprites :: HM.HashMap String S.Sprite
-  , enemy :: E.Enemy
+  , enemyManager :: E.EnemyManager
   }
 
 mkGameState :: IO GameState
 mkGameState = do
+  allAnimations <- E.allEnemyAnimations
   fba <- E.firebugAnimations
   _lba <- E.leafbugAnimations
   _mca <- E.magmaCrabAnimations
@@ -45,7 +48,10 @@ mkGameState = do
         , ("flyinglocust", S.mkAnimatedSprite 200 (-200) $ A.mkAnimation (E.moveRight fla) (-1))
         , ("voidbutterfly", S.mkAnimatedSprite 200 (-300) $ A.mkAnimation (E.dieRight vba) (-1))
         ]
-    , enemy = E.mkFromGridPath (S.mkStaticSprite sx sy G.blank) path sca
+    , enemyManager = E.mkEnemyManager 
+        allAnimations 
+        [(E.Firebug, 0), (E.Leafbug, 1), (E.MagmaCrab, 1.5), (E.Scorpion, 2), (E.Clampbeetle, 8)] 
+        path
     }
 
 window :: Display
@@ -80,15 +86,16 @@ main = do
     (\world -> pictures 
       [ drawScene allScenes (time world) world
       -- , S.draw (time world) (sprites world HM.! "scorpion")
-      , S.draw (time world) (sprites world HM.! "firebug")
-      , S.draw (time world) (sprites world HM.! "clampbeetle")
-      , S.draw (time world) (sprites world HM.! "firewasp")
-      , S.draw (time world) (sprites world HM.! "flyinglocust")
-      , S.draw (time world) (sprites world HM.! "voidbutterfly")
-      , E.draw (time world) (enemy world)
-      , debugGrid
-      , debugPoint (-220) 200
-      , uncurry debugPoint $ gridCenterOf (gridCellOf (-220, 200)) (1, 1)
+      -- , S.draw (time world) (sprites world HM.! "firebug")
+      -- , S.draw (time world) (sprites world HM.! "clampbeetle")
+      -- , S.draw (time world) (sprites world HM.! "firewasp")
+      -- , S.draw (time world) (sprites world HM.! "flyinglocust")
+      -- , S.draw (time world) (sprites world HM.! "voidbutterfly")
+      -- , E.draw (time world) (enemy world)
+      , E.draw (time world) (enemyManager world)
+      -- , debugGrid
+      -- , debugPoint (-220) 200
+      -- , uncurry debugPoint $ gridCenterOf (gridCellOf (-220, 200)) (1, 1)
       ]
     )
     (\_ -> id) 
@@ -99,7 +106,7 @@ main = do
       \dt world -> world {time = time world + dt}
      , \_ world -> world 
         { sprites = HM.map (S.update $ time world) $ sprites world
-        , enemy = E.update (time world) (enemy world)
+        , enemyManager = E.update (time world) (enemyManager world)
         }
     
     ]

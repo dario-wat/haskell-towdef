@@ -32,7 +32,7 @@ library
       GameObjects.Terrain
       Lib.Animation
       Lib.Enemy.Animations
-      Lib.Enemy.Spawner
+      Lib.Enemy.Manager
       Lib.Enemy.Types
       Lib.Image
       Lib.Level.Grid
