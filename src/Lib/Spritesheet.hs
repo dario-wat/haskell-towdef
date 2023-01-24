@@ -17,7 +17,9 @@ import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
 
 type FrameIndex = (Int, Int)
 type FrameSize = (Int, Int)
-type RowIndexConfig = (Int, Int, Int) -- (row index, col index, frame count in the row)
+
+-- | (row index, col index, frame count in the row, step frames)
+type RowIndexConfig = (Int, Int, Int, Int) 
 
 data Frame = Frame
   { index    :: !FrameIndex
@@ -61,7 +63,7 @@ framesIndexed s img = mapMaybe (frameMap HM.!?)
     frameMap = HM.fromList $ map frameKV $ allFrames s img
 
 genRowIndices :: RowIndexConfig -> [FrameIndex]
-genRowIndices (r, c, cnt) = map (r,) [c..c+cnt-1]
+genRowIndices (r, c, cnt, step) = map ((r,) . (+c) . (*step)) [0..cnt-1]
 
 -- | Generate a list of pictures from a spritesheet given the frame size
 -- and the row configuration (row index, column index, number of frames)

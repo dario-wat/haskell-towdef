@@ -3,6 +3,7 @@ module GameObjects.Terrain
   , Terrain(..)
   , TerrainObjects(..)
   , TerrainTiles(..)
+  , WaterAnimations(..)
   , terrainObjects
   , terrainTiles
   , drawTerrain
@@ -10,6 +11,7 @@ module GameObjects.Terrain
   , brownTrees
   , rocks
   , bushes
+  , waterAnimations
   ) where
 
 import Data.Tuple.HT (uncurry3)
@@ -17,9 +19,12 @@ import Codec.Picture (DynamicImage, convertRGBA8)
 import Codec.Picture.Extra (crop)
 import Graphics.Gloss (Picture, pictures, translate)
 import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
+import ThirdParty.GraphicsGlossGame (animation)
 import Const (spriteWidth, spriteHeight)
+import Lib.Animation (MkAnimation)
 import Lib.Image (readPngOrError)
 import Lib.Level.Grid (gridCenterOf)
+import Lib.Spritesheet (animFrames)
 
 data Tile = Tile 
   { picture :: !Picture
@@ -171,4 +176,54 @@ terrainTiles = do
     , grass                = cropTile  1  2 im
     , roadVertical         = cropTile  2  5 im
     , roadHorizontal       = cropTile  1  6 im
+    }
+
+data WaterAnimations = WaterAnimations
+  { left               :: !MkAnimation
+  , right              :: !MkAnimation
+  , top                :: !MkAnimation
+  , bottom             :: !MkAnimation
+  , topLeftConcave     :: !MkAnimation
+  , topRightConcave    :: !MkAnimation
+  , bottomLeftConcave  :: !MkAnimation
+  , bottomRightConcave :: !MkAnimation
+  , topLeftConvex      :: !MkAnimation
+  , topRightConvex     :: !MkAnimation
+  , bottomLeftConvex   :: !MkAnimation
+  , bottomRightConvex  :: !MkAnimation
+  , fullCalm           :: !MkAnimation
+  , fullWave1          :: !MkAnimation
+  , fullWave2          :: !MkAnimation
+  , fullWave3          :: !MkAnimation
+  , fullBubbles1       :: !MkAnimation
+  , fullBubbles2       :: !MkAnimation
+  , fullFish           :: !MkAnimation
+  }
+
+waterAnimations :: IO WaterAnimations
+waterAnimations = do
+  img <- readPngOrError "assets/water_tileset.png"
+  let 
+    waterAnimation (r, c) = animation (animFrames size (r, c, 10, 7) img) 0.1
+    size = (64, 64)
+  return $ WaterAnimations
+    { left               = waterAnimation (3, 0)
+    , right              = waterAnimation (3, 6)
+    , top                = waterAnimation (0, 3)
+    , bottom             = waterAnimation (6, 3)
+    , topLeftConcave     = waterAnimation (4, 4)
+    , topRightConcave    = waterAnimation (4, 2)
+    , bottomLeftConcave  = waterAnimation (2, 4)
+    , bottomRightConcave = waterAnimation (2, 2)
+    , topLeftConvex      = waterAnimation (0, 2)
+    , topRightConvex     = waterAnimation (0, 4)
+    , bottomLeftConvex   = waterAnimation (6, 2)
+    , bottomRightConvex  = waterAnimation (6, 4)
+    , fullCalm           = waterAnimation (5, 3)
+    , fullWave1          = waterAnimation (1, 3)
+    , fullWave2          = waterAnimation (3, 3)
+    , fullWave3          = waterAnimation (1, 3)
+    , fullBubbles1       = waterAnimation (3, 4)
+    , fullBubbles2       = waterAnimation (3, 5)
+    , fullFish           = waterAnimation (4, 3)
     }
