@@ -18,6 +18,8 @@ import Graphics.Gloss (pictures)
 -- TODO
 -- Make corners rounded
 -- Make enemies follow the path
+-- Water generate and draw
+-- Use sprites for tiles
 
 -- TODO what is this?
 generateGrid :: IO Grid

@@ -11,7 +11,7 @@ import qualified Lib.Enemy.Manager as E
 import qualified GameObjects.Enemy as E hiding (update, draw)
 import qualified GameObjects.Sprite as S
 import Lib.Level.Path (genRandomPath, addPathToGrid, Path)
-import Lib.Level.Grid (emptyGrid, debugGrid, gridCellOf, gridCenterOf)
+import Lib.Level.Grid (emptyGrid, debugGrid, gridCellOf, gridCenterOf, gridArrayStr)
 import Lib.Level.MapGenerator (picturizeGrid)
 import qualified Lib.Animation as A
 import Debug (debugPoint)
@@ -75,6 +75,7 @@ main = do
 
   let grid = addPathToGrid emptyGrid (path gs)
   gridPic <- picturizeGrid grid
+  putStrLn $ gridArrayStr grid
 
   -- let scorpion = sprites gs HM.! "scorpion"
   -- print (S.x scorpion, S.y scorpion)
