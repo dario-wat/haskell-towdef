@@ -17,6 +17,7 @@ data TileType =
   | BrownTree
   | Rock
   | Bush
+  | Water
   deriving (Show, Eq)
 
 tileTypeChar :: TileType -> Char
@@ -33,3 +34,4 @@ tileTypeChar GreenTree      = 'G'
 tileTypeChar BrownTree      = 'B'
 tileTypeChar Rock           = 'R'
 tileTypeChar Bush           = 'b'
+tileTypeChar Water          = 'W'

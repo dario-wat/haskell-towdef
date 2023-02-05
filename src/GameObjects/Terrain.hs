@@ -26,6 +26,9 @@ import Lib.Image (readPngOrError)
 import Lib.Level.Grid (gridCenterOf)
 import Lib.Spritesheet (animFrames)
 
+-- TODO
+-- 1. Will likely need to do the usual draw + update thing for water
+
 data Tile = Tile 
   { picture :: !Picture
   , width   :: !Int

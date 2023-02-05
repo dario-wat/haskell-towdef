@@ -10,16 +10,19 @@ import Data.Array (assocs, (//))
 import qualified Graphics.Gloss as G
 import Lib.Level.Grid (Grid(..), emptyGrid)
 import Lib.Level.Path (genRandomPath, addPathToGrid)
+-- import Lib.Level.Point (genStartEndPoints)
 import qualified Lib.Level.TileType as TT
 import Lib.Util (chooseRandom)
 import qualified GameObjects.Terrain as T
 import Graphics.Gloss (pictures)
 
 -- TODO
+-- WIP
 -- Make corners rounded
 -- Make enemies follow the path
 -- Water generate and draw
 -- Use sprites for tiles
+-- Might need draw + update
 
 -- TODO what is this?
 generateGrid :: IO Grid
@@ -64,6 +67,15 @@ addObjectsToGrid grid = do
   shuffled <- chooseRandom totalCount emptyTiles
   return $ Grid $ unGrid grid // addObjects objs (map fst shuffled)
 
+-- addWaterToGrid :: Grid -> IO Grid
+-- addWaterToGrid grid = do
+--   (start, end) <- genStartEndPoints
+  
+--   let 
+--     emptyTiles = filter ((==TT.Empty) . snd) $ assocs $ unGrid grid
+--     waterTiles = map (,TT.Water) emptyTiles
+--   return $ Grid $ unGrid grid // waterTiles
+
 drawTerraineWithMap :: (TT.TileType -> IO T.Tile) -> Grid -> IO G.Picture
 drawTerraineWithMap tf grid = T.drawTerrain . T.Terrain <$> mapM tTypeF (assocs $ unGrid grid)
   where tTypeF ((x, y), tType) = (x, y,) <$> tf tType
@@ -92,6 +104,8 @@ picturizeGrid grid = do
     tileMapM TT.BrownTree      = randomTile =<< T.brownTrees
     tileMapM TT.Rock           = randomTile =<< T.rocks
     tileMapM TT.Bush           = randomTile =<< T.bushes
+    -- TODO fix water
+    tileMapM TT.Water          = return $ T.grass tTil
 
   grassBg <- grassBackground
   newGrid <- addObjectsToGrid grid

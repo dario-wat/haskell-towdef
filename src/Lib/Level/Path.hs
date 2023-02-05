@@ -17,11 +17,12 @@ import Data.Maybe (mapMaybe, isJust)
 import qualified Control.Monad.HT as M (until)
 import qualified Graphics.Gloss as GL
 import qualified Lib.Level.Grid as G
+import qualified Lib.Level.Point as P
 import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl, count)
 import qualified Lib.Level.TileType as TT
 
-type Path = [G.Point]
-type PathSegment = (G.Point, G.Point)
+type Path = [P.Point]
+type PathSegment = (P.Point, P.Point)
 
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
@@ -57,7 +58,7 @@ isValidPath path =
     hasNoOverlap = not . any (uncurry segmentOverlap) . allSegmentPairs
     crossingCount = count (isJust . uncurry segmentCrossing) . allSegmentPairs
     pathLength = (+1) . sum . map (uncurry manhattanDist) . pathSegments
-    quadrantCount = length . nub . map G.pointQuadrant
+    quadrantCount = length . nub . map P.quadrant
     hasNoAdjacentSegments = not . any (uncurry segmentAdjacent) . allSegmentPairs
     
 -- | Generates a single random path that satisfies all validity requirements.
@@ -66,8 +67,8 @@ genRandomPath = head <$> M.until (not . null) genRandomPaths
   where
     genRandomPaths = do
       n <- randomRIO intermediatePointRange
-      points <- G.genRandomPoints n
-      (start, end) <- genStartEndPoints
+      points <- P.genRandomPoints n
+      (start, end) <- P.genStartEndPoints
       return $ filter isValidPath $ createAllPaths $ start : points ++ [end]
 
 addPathToGrid :: G.Grid -> Path -> G.Grid
@@ -89,16 +90,10 @@ toGlossPath = map (`G.gridCenterOf` (1, 1))
 -- Path creation
 -------------------------------------------------------------------------------
 
-genStartEndPoints :: IO (G.Point, G.Point)
-genStartEndPoints = do
-  start <- G.genRandomEdgePoint
-  end <- G.genRandomEdgePoint
-  if start == end then genStartEndPoints else return (start, end)
-
 -- | There are either one or two paths between two points.
 -- There is only one path if the points are on the same row or column.
 -- Otherwise there are two paths, one going up and one going right.
-connectTwoPoints :: G.Point -> G.Point -> [Path]
+connectTwoPoints :: P.Point -> P.Point -> [Path]
 connectTwoPoints (x1, y1) (x2, y2)
   | x1 == x2 || y1 == y2 = [singlePath]
   | otherwise            = [path1, path2]
@@ -108,7 +103,7 @@ connectTwoPoints (x1, y1) (x2, y2)
     singlePath = [(x1, y1), (x2, y2)]
 
 -- | Creates a list of paths for each adjacent pair of points
-connectAllPoints :: [G.Point] -> [[Path]]
+connectAllPoints :: [P.Point] -> [[Path]]
 connectAllPoints []         = []
 connectAllPoints [_]        = []
 connectAllPoints (p1:p2:ps) = connectTwoPoints p1 p2 : connectAllPoints (p2:ps)
@@ -123,7 +118,7 @@ combinePathsAcc !acc ([p]:ps)     = combinePathsAcc (map (++p) acc) ps
 combinePathsAcc !acc ([p1,p2]:ps) = combinePathsAcc (map (++p1) acc ++ map (++p2) acc) ps
 combinePathsAcc _   _             = error "combinePathsAcc: impossible"
 
-createAllPaths :: [G.Point] -> [Path]
+createAllPaths :: [P.Point] -> [Path]
 createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoints
   where removeConsecutiveDuplicates = map head . group
 
@@ -162,14 +157,14 @@ segmentAdjacent ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4)) =
   
 -- There might be a bug here
 -- | Finds a crossing point between two segments if there is one
-segmentCrossing :: PathSegment -> PathSegment -> Maybe G.Point
+segmentCrossing :: PathSegment -> PathSegment -> Maybe P.Point
 segmentCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
   | x1 == x2 && y3 == y4 && inRangeAbsExcl (x3, x4) x1 && inRangeAbsExcl (y1, y2) y3 = Just (x1, y3)
   | x3 == x4 && y1 == y2 && inRangeAbsExcl (x1, x2) x3 && inRangeAbsExcl (y3, y4) y1 = Just (x3, y1)
   | otherwise = Nothing
 
 -- | Finds a corner between two segments if there is one
-segmentCornerType :: PathSegment -> PathSegment -> Maybe (G.Point, TT.TileType)
+segmentCornerType :: PathSegment -> PathSegment -> Maybe (P.Point, TT.TileType)
 segmentCornerType (a1, b1) (a2, b2)
   | a1 == a2 && b1 == b2 || a1 == b2 && b1 == a2 = Nothing
   | a1 == a2 = getCornerType b1 a1 b2

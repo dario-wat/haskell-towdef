@@ -1,32 +1,22 @@
-{-# LANGUAGE TupleSections #-}
-
 module Lib.Level.Grid 
   ( Grid(..)
-  , Point
   , gridCenterOf
   , gridCellOf
   , gridCols
   , gridRows
   , emptyGrid
 
-  , genRandomPoints
-  , genRandomEdgePoint
-  , pointQuadrant
-
   , debugGrid
   , gridArrayStr
   , gridArraysStr
   ) where
 
-import System.Random (randomRIO)
 import Data.Array (Array, listArray, elems)
 import Data.List.HT (sliceHorizontal)
 import Data.List (intercalate)
 import qualified Graphics.Gloss as G
 import Lib.Window (windowWidth, windowHeight, x', y')
 import Lib.Level.TileType (TileType(Empty), tileTypeChar)
-
-type Point = (Int, Int)
 
 newtype Grid = Grid
   { unGrid :: Array (Int, Int) TileType
@@ -92,44 +82,6 @@ gridX x = gridStartX + fromIntegral x * cellSize
 -- | Bottom left y coordinate of a grid cell
 gridY :: Int -> Float
 gridY y = gridStartY + fromIntegral y * cellSize
-
--------------------------------------------------------------------------------
--- Point
--------------------------------------------------------------------------------
-
-genRandomPoint :: IO Point
-genRandomPoint = do
-  x <- randomRIO (0, gridCols - 1)
-  y <- randomRIO (0, gridRows - 1)
-  return (x, y)
-
--- | Generates a list of n unique random grid points
-genRandomPoints :: Int -> IO [Point]
-genRandomPoints n = genMorePoints []
-  where
-    genMorePoints curr
-      | length curr == n = return curr
-      | otherwise        = do
-        p <- genRandomPoint
-        if p `elem` curr then genMorePoints curr else genMorePoints (p : curr)
-
-genRandomEdgePoint :: IO Point
-genRandomEdgePoint = do
-  edge <- randomRIO (0 :: Int, 3)
-  case edge of
-    0 -> (,0) <$> randomRIO (0, gridCols - 1)
-    1 -> (, gridRows-1) <$> randomRIO (0, gridCols - 1)
-    2 -> (0,) <$> randomRIO (0, gridRows - 1)
-    3 -> (gridCols-1,) <$> randomRIO (0, gridRows - 1)
-    _ -> error "genRandomEdgePoint: impossible"
-
-pointQuadrant :: Point -> Int
-pointQuadrant (x, y)
-  | x < gridCols `div` 2 && y < gridRows `div` 2 = 1
-  | x < gridCols `div` 2 && y >= gridRows `div` 2 = 2
-  | x >= gridCols `div` 2 && y < gridRows `div` 2 = 3
-  | x >= gridCols `div` 2 && y >= gridRows `div` 2 = 4
-  | otherwise = error "pointQuadrant: impossible"
 
 -------------------------------------------------------------------------------
 -- Debugging

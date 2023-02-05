@@ -38,6 +38,7 @@ library
       Lib.Level.Grid
       Lib.Level.MapGenerator
       Lib.Level.Path
+      Lib.Level.Point
       Lib.Level.TileType
       Lib.Spritesheet
       Lib.Util
