@@ -67,7 +67,7 @@ genRandomPath = head <$> M.until (not . null) genRandomPaths
   where
     genRandomPaths = do
       n <- randomRIO intermediatePointRange
-      points <- P.genRandomPoints n
+      points <- P.genRandomNPointsOn P.Center n
       (start, end) <- P.genStartEndPoints
       return $ filter isValidPath $ createAllPaths $ start : points ++ [end]
 

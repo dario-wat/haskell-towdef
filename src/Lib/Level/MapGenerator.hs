@@ -69,7 +69,7 @@ addObjectsToGrid grid = do
 
 -- addWaterToGrid :: Grid -> IO Grid
 -- addWaterToGrid grid = do
---   (start, end) <- genStartEndPoints
+--   (start, end) <- genNonCornerStartEndPoints
   
 --   let 
 --     emptyTiles = filter ((==TT.Empty) . snd) $ assocs $ unGrid grid
