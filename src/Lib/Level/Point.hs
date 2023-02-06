@@ -9,7 +9,8 @@ module Lib.Level.Point
   , genRandomPointOn
   , genRandomNPointsOn
   , genRandomPointsOn
-  , genStartEndPoints
+  , genRandomPointWith
+  , genRandomNPointsWithUnique
   , quadrant
   , isCorner
   , isEdge
@@ -18,6 +19,8 @@ module Lib.Level.Point
 import Prelude hiding (Left, Right)
 import System.Random (randomRIO)
 import Lib.Level.Grid (gridCols, gridRows)
+import Lib.Util (chooseRandom)
+import Control.Monad (when)
 
 type Point = (Int, Int)
 
@@ -48,10 +51,10 @@ genRandomPointOn (Edge Top)            = (,0)          <$> randomRIO (0, gridCol
 genRandomPointOn (Edge Bottom)         = (,gridRows-1) <$> randomRIO (0, gridCols - 1)
 genRandomPointOn (Edge Left)           = (0,)          <$> randomRIO (0, gridRows - 1)
 genRandomPointOn (Edge Right)          = (gridCols-1,) <$> randomRIO (0, gridRows - 1)
-genRandomPointOn (EdgeExcl TopExcl)    = (,1)          <$> randomRIO (1, gridCols - 2)
-genRandomPointOn (EdgeExcl BottomExcl) = (,gridRows-2) <$> randomRIO (1, gridCols - 2)
-genRandomPointOn (EdgeExcl LeftExcl)   = (1,)          <$> randomRIO (1, gridRows - 2)
-genRandomPointOn (EdgeExcl RightExcl)  = (gridCols-2,) <$> randomRIO (1, gridRows - 2)
+genRandomPointOn (EdgeExcl TopExcl)    = (,0)          <$> randomRIO (1, gridCols - 2)
+genRandomPointOn (EdgeExcl BottomExcl) = (,gridRows-1) <$> randomRIO (1, gridCols - 2)
+genRandomPointOn (EdgeExcl LeftExcl)   = (0,)          <$> randomRIO (1, gridRows - 2)
+genRandomPointOn (EdgeExcl RightExcl)  = (gridCols-1,) <$> randomRIO (1, gridRows - 2)
 genRandomPointOn (Corner TopLeft)      = return (0, 0)
 genRandomPointOn (Corner TopRight)     = return (gridCols-1, 0)
 genRandomPointOn (Corner BottomLeft)   = return (0, gridRows-1)
@@ -72,16 +75,24 @@ genRandomNPointsOn pLoc n = genMorePoints []
 genRandomPointsOn :: [PointLocation] -> IO [Point]
 genRandomPointsOn = mapM genRandomPointOn
 
-genRandomEdgeExclPoint :: IO Point
-genRandomEdgeExclPoint = 
-  genRandomPointOn . Edge . ([minBound..maxBound] !!) =<< randomRIO (0 :: Int, 3)
+-- | Generates a random point on the grid given a point location generator function.
+-- This means that we can do things like `genRandomPointWith EdgeExcl`
+-- The difference between this function and `genRandomPointOn` is that this function
+-- allows a more general point location generator function (e.g. EdgeExcl) unlike
+-- `genRandomPointOn` which only allows a specific point location (e.g. EdgeExcl TopExcl)
+genRandomPointWith :: (Enum a, Bounded a) => (a -> PointLocation) -> IO Point
+genRandomPointWith fn = 
+  genRandomPointOn . fn . head =<< chooseRandom 1 [minBound..maxBound]
 
--- | Generates two random points on the edges of the grid, excluding corners
-genStartEndPoints :: IO (Point, Point)
-genStartEndPoints = do
-  start <- genRandomEdgeExclPoint
-  end <- genRandomEdgeExclPoint
-  if start == end then genStartEndPoints else return (start, end)
+-- | Generates n random points on n unique point locations. 
+-- E.g. if we call `genRandomNPointsWithUnique EdgeExcl 2`, we will get 2 random points
+-- on the two unique edge locations (excluding corners).
+-- This allows us to avoid generating points on the same edge location.
+genRandomNPointsWithUnique :: (Enum a, Bounded a) => (a -> PointLocation) -> Int -> IO [Point]
+genRandomNPointsWithUnique fn n = do
+  let enums = [minBound..maxBound]
+  when (n > length enums) $ error "genRandomNPointsWithUnique: n > length enums"
+  mapM (genRandomPointOn . fn) =<< chooseRandom n enums
 
 -- | Returns the quadrant of a point on the grid as an integer
 quadrant :: Point -> Int

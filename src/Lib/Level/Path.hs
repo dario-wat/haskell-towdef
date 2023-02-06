@@ -20,6 +20,7 @@ import qualified Lib.Level.Grid as G
 import qualified Lib.Level.Point as P
 import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl, count)
 import qualified Lib.Level.TileType as TT
+import Lib.Level.Point (PointLocation(EdgeExcl))
 
 type Path = [P.Point]
 type PathSegment = (P.Point, P.Point)
@@ -68,7 +69,7 @@ genRandomPath = head <$> M.until (not . null) genRandomPaths
     genRandomPaths = do
       n <- randomRIO intermediatePointRange
       points <- P.genRandomNPointsOn P.Center n
-      (start, end) <- P.genStartEndPoints
+      (start, end) <- genStartEndPoints
       return $ filter isValidPath $ createAllPaths $ start : points ++ [end]
 
 addPathToGrid :: G.Grid -> Path -> G.Grid
@@ -89,6 +90,13 @@ toGlossPath = map (`G.gridCenterOf` (1, 1))
 -------------------------------------------------------------------------------
 -- Path creation
 -------------------------------------------------------------------------------
+
+-- | Generates two random points on the edges of the grid, excluding corners
+genStartEndPoints :: IO (P.Point, P.Point)
+genStartEndPoints = do
+  start <- P.genRandomPointWith EdgeExcl
+  end <- P.genRandomPointWith EdgeExcl
+  if start == end then genStartEndPoints else return (start, end)
 
 -- | There are either one or two paths between two points.
 -- There is only one path if the points are on the same row or column.
