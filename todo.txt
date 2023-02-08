@@ -12,3 +12,4 @@
 - Enemy generator, and procedural generation
 - Remove enemy when reaches the end of the path
 - Different speeds and HP for enemies
+- Path crossings are still buggy sometimes

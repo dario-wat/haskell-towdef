@@ -13,14 +13,19 @@ module Lib.Level.Point
   , genRandomNPointsWithUnique
   , quadrant
   , isCorner
-  , isEdge
+  , isOnEdge
+  , isOnHorizontalEdge
+  , isOnVerticalEdge
+  , areOnOppositeEdgeExcl
+  , areOnAdjacentEdgeExcl
   ) where
 
 import Prelude hiding (Left, Right)
 import System.Random (randomRIO)
+import Control.Monad (when)
+import Data.Maybe (isJust)
 import Lib.Level.Grid (gridCols, gridRows)
 import Lib.Util (chooseRandom)
-import Control.Monad (when)
 
 type Point = (Int, Int)
 
@@ -103,9 +108,53 @@ quadrant (x, y)
   | x >= gridCols `div` 2 && y >= gridRows `div` 2 = 4
   | otherwise = error "quadrant: impossible"
 
-isEdge :: Point -> Bool
-isEdge (x, y) = x == 0 || x == gridCols - 1 || y == 0 || y == gridRows - 1
-
 isCorner :: Point -> Bool
 isCorner (x, y) = (x == 0 || x == gridCols - 1) && (y == 0 || y == gridRows - 1)
 
+isOnEdge :: Point -> Bool
+isOnEdge = isJust . getEdge
+
+isOnHorizontalEdge :: Point -> Bool
+isOnHorizontalEdge p = getEdge p == Just Top || getEdge p == Just Bottom
+
+isOnVerticalEdge :: Point -> Bool
+isOnVerticalEdge p = getEdge p == Just Left || getEdge p == Just Right
+
+getEdge :: Point -> Maybe Edge
+getEdge (x, y)
+  | x == 0            = Just Left
+  | x == gridCols - 1 = Just Right
+  | y == 0            = Just Top
+  | y == gridRows - 1 = Just Bottom
+  | otherwise         = Nothing
+
+getEdgeExcl :: Point -> Maybe EdgeExcl
+getEdgeExcl p
+  | isCorner p               = Nothing
+  | getEdge p == Just Left   = Just LeftExcl
+  | getEdge p == Just Right  = Just RightExcl
+  | getEdge p == Just Top    = Just TopExcl
+  | getEdge p == Just Bottom = Just BottomExcl
+  | otherwise                = Nothing
+
+areOnOppositeEdgeExcl :: Point -> Point -> Bool
+areOnOppositeEdgeExcl p1 p2 = 
+  case (getEdgeExcl p1, getEdgeExcl p2) of
+    (Just TopExcl   , Just BottomExcl) -> True
+    (Just BottomExcl, Just TopExcl)    -> True
+    (Just LeftExcl  , Just RightExcl)  -> True
+    (Just RightExcl , Just LeftExcl)   -> True
+    _                                  -> False
+
+areOnAdjacentEdgeExcl :: Point -> Point -> Bool
+areOnAdjacentEdgeExcl p1 p2 = 
+  case (getEdgeExcl p1, getEdgeExcl p2) of
+    (Just TopExcl   , Just LeftExcl)   -> True
+    (Just TopExcl   , Just RightExcl)  -> True
+    (Just BottomExcl, Just LeftExcl)   -> True
+    (Just BottomExcl, Just RightExcl)  -> True
+    (Just LeftExcl  , Just TopExcl)    -> True
+    (Just LeftExcl  , Just BottomExcl) -> True
+    (Just RightExcl , Just TopExcl)    -> True
+    (Just RightExcl , Just BottomExcl) -> True
+    _                                  -> False
