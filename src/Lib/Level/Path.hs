@@ -8,6 +8,9 @@ module Lib.Level.Path
   , toGlossPath
   ) where
 
+-- TODO
+-- 1. Make this more general so that it can be reused for water
+
 import Prelude hiding (Left, Right)
 import System.Random (randomRIO)
 import Data.Array ((//))

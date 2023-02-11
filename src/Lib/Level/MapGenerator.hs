@@ -1,15 +1,16 @@
 {-# LANGUAGE TupleSections #-}
 
 module Lib.Level.MapGenerator 
-  ( picturizeGrid
-  , generateGrid
+  ( Map(..) 
+  , picturizeGrid
+  , generateMap
   ) where
 
 import System.Random (randomRIO)
 import Data.Array (assocs, (//))
 import qualified Graphics.Gloss as G
 import Lib.Level.Grid (Grid(..), emptyGrid)
-import Lib.Level.Path (genRandomPath, addPathToGrid)
+import Lib.Level.Path (Path, genRandomPath, addPathToGrid)
 -- import Lib.Level.Point (genStartEndPoints)
 import qualified Lib.Level.TileType as TT
 import Lib.Util (chooseRandom)
@@ -25,9 +26,11 @@ import qualified Lib.Level.Point as P
 -- Use sprites for tiles
 -- Might need draw + update
 
--- TODO what is this?
-generateGrid :: IO Grid
-generateGrid = addPathToGrid emptyGrid <$> genRandomPath
+data Map = Map
+  { grid :: Grid
+  , path :: Path
+  }
+
 
 greenTreeRange :: (Int, Int)
 greenTreeRange = (8, 12)
@@ -80,8 +83,8 @@ addWaterToGrid grid = do
       where
         getInterPoint :: P.Point -> P.Point -> P.Point
         getInterPoint p1@(x1, y1) p2@(x2, y2)
-          | P.isOnHorizontalEdge p1 && P.isOnVerticalEdge p2 = (x2, y1)
-          | P.isOnVerticalEdge p1 && P.isOnHorizontalEdge p2 = (x1, y2)
+          | P.isOnHorizontalEdge p1 && P.isOnVerticalEdge p2 = (x1, y2)
+          | P.isOnVerticalEdge p1 && P.isOnHorizontalEdge p2 = (x2, y1)
           | otherwise = error "impossible: Points are not on adjacent edges"
 
         getMiddlePoints :: P.Point -> P.Point -> [P.Point]
@@ -101,6 +104,12 @@ addWaterToGrid grid = do
 drawTerraineWithMap :: (TT.TileType -> IO T.Tile) -> Grid -> IO G.Picture
 drawTerraineWithMap tf grid = T.drawTerrain . T.Terrain <$> mapM tTypeF (assocs $ unGrid grid)
   where tTypeF ((x, y), tType) = (x, y,) <$> tf tType
+
+generateMap :: IO Map
+generateMap = do
+  path <- genRandomPath
+  grid <- addWaterToGrid =<< addObjectsToGrid (addPathToGrid emptyGrid path)
+  return $ Map grid path
 
 picturizeGrid :: Grid -> IO G.Picture
 picturizeGrid grid = do
@@ -130,8 +139,6 @@ picturizeGrid grid = do
     tileMapM TT.Water          = return $ T.roadCrossing tTil
 
   grassBg <- grassBackground
-  newGrid <- addObjectsToGrid grid
-  waterGrid <- addWaterToGrid newGrid
-  terrainPic <- drawTerraineWithMap tileMapM waterGrid
+  terrainPic <- drawTerraineWithMap tileMapM grid
   return $ pictures [grassBg, terrainPic]
     

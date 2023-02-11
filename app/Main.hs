@@ -12,7 +12,7 @@ import qualified GameObjects.Enemy as E hiding (update, draw)
 import qualified GameObjects.Sprite as S
 import Lib.Level.Path (genRandomPath, addPathToGrid, Path)
 import Lib.Level.Grid (emptyGrid, debugGrid, gridCellOf, gridCenterOf, gridArrayStr)
-import Lib.Level.MapGenerator (picturizeGrid)
+import Lib.Level.MapGenerator (Map(..), picturizeGrid, generateMap)
 import qualified Lib.Animation as A
 import Debug (debugPoint)
 import qualified GameObjects.Terrain as W
@@ -22,7 +22,7 @@ import qualified GameObjects.Terrain as W
 
 data GameState = GameState
   { time :: Float
-  , path :: Path
+  , gmap :: Map
   , sprites :: HM.HashMap String S.Sprite
   , enemyManager :: E.EnemyManager
   , water :: A.Animation
@@ -41,11 +41,11 @@ mkGameState = do
   fla <- E.flyingLocustAnimations
   vba <- E.voidbutterflyAnimations
   wa <- W.waterAnimations
-  path <- genRandomPath
-  let (sx, sy) = gridCenterOf (head path) (1, 1)
+  gmap <- generateMap
+  let (sx, sy) = gridCenterOf (head $ path gmap) (1, 1)
   return $ GameState
     { time = 0
-    , path
+    , gmap
     , sprites = HM.fromList
         [ --("scorpion", S.mkAnimatedSprite sx sy $ A.mkAnimation (E.moveRight sca) (-1))
          ("firebug", S.mkAnimatedSprite 200 100 $ A.mkAnimation (E.moveRight fba) (-1))
@@ -57,7 +57,7 @@ mkGameState = do
     , enemyManager = E.mkEnemyManager 
         allAnimations 
         [(E.Firebug, 0), (E.Leafbug, 1), (E.MagmaCrab, 1.5), (E.Scorpion, 2), (E.Clampbeetle, 8)] 
-        path
+        (path gmap)
     , water = A.mkInfAnimation $ W.fullFish wa
     , watera2 = A.mkInfAnimation $ W.fullBubbles2 wa
     }
@@ -73,9 +73,9 @@ main :: IO ()
 main = do
   gs <- mkGameState
 
-  let grid = addPathToGrid emptyGrid (path gs)
-  gridPic <- picturizeGrid grid
-  putStrLn $ gridArrayStr grid
+  -- let grid = addPathToGrid emptyGrid (path $ gmap gs)
+  gridPic <- picturizeGrid $ grid $ gmap gs
+  putStrLn $ gridArrayStr $ grid $ gmap gs
 
   -- let scorpion = sprites gs HM.! "scorpion"
   -- print (S.x scorpion, S.y scorpion)
