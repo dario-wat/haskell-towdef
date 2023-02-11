@@ -7,10 +7,6 @@ module GameObjects.Terrain
   , terrainObjects
   , terrainTiles
   , drawTerrain
-  , greenTrees
-  , brownTrees
-  , rocks
-  , bushes
   , waterAnimations
   ) where
 
@@ -127,26 +123,6 @@ terrainObjects = do
     , rockWallBottomLeft  = cropTile  12  8 im
     , rockWallBottomRight = cropTile  11  9 im
     }
-
-greenTrees :: IO [Tile]
-greenTrees = do
-  tObj <- terrainObjects
-  return [greenTree1 tObj, greenTree2 tObj, greenTree3 tObj, greenTree4 tObj]
-
-brownTrees :: IO [Tile]
-brownTrees = do
-  tObj <- terrainObjects
-  return [brownTree1 tObj, brownTree2 tObj, brownTree3 tObj, brownTree4 tObj]
-
-rocks :: IO [Tile]
-rocks = do
-  tObj <- terrainObjects
-  return [rock1 tObj, rock2 tObj, rock3 tObj, rock4 tObj]
-
-bushes :: IO [Tile]
-bushes = do
-  tObj <- terrainObjects
-  return [bush1 tObj, bush2 tObj]
 
 data TerrainTiles = TerrainTiles
   { roadCrossing         :: !Tile

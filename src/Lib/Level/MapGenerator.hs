@@ -13,7 +13,7 @@ import Lib.Level.Grid (Grid(..), emptyGrid)
 import Lib.Level.Path (Path, genRandomPath, addPathToGrid)
 -- import Lib.Level.Point (genStartEndPoints)
 import qualified Lib.Level.TileType as TT
-import Lib.Util (chooseRandom)
+import Lib.Util (chooseRandom, chooseRandomReplacement)
 import qualified GameObjects.Terrain as T
 import Graphics.Gloss (pictures)
 import qualified Lib.Level.Point as P
@@ -44,32 +44,26 @@ rockRange = (6, 8)
 bushRange :: (Int, Int)
 bushRange = (4, 6)
 
-objectsToAdd :: IO [(Int, TT.TileType)]
+objectsToAdd :: IO [TT.TileType]
 objectsToAdd = do
   grTreeCount <- randomRIO greenTreeRange
   brTreeCount <- randomRIO brownTreeRange
   rockCount   <- randomRIO rockRange
   bushCount   <- randomRIO bushRange
-  return 
-    [ (grTreeCount, TT.GreenTree)
-    , (brTreeCount, TT.BrownTree)
-    , (rockCount,   TT.Rock)
-    , (bushCount,   TT.Bush)
+  concat <$> sequence
+    [ chooseRandomReplacement grTreeCount TT.greenTrees
+    , chooseRandomReplacement brTreeCount TT.brownTrees
+    , chooseRandomReplacement rockCount   TT.rocks
+    , chooseRandomReplacement bushCount   TT.bushes
     ]
 
 addObjectsToGrid :: Grid -> IO Grid
 addObjectsToGrid grid = do
-  let 
-    emptyTiles = filter ((==TT.Empty) . snd) $ assocs $ unGrid grid
-    
-    addObjects :: [(Int, TT.TileType)] -> [(Int, Int)] -> [((Int, Int), TT.TileType)]
-    addObjects ((n, tType):objs) points = zip (take n points) (repeat tType) ++ addObjects objs (drop n points)
-    addObjects [] _ = []
-
+  let emptyTiles = filter ((==TT.Empty) . snd) $ assocs $ unGrid grid
   objs <- objectsToAdd
-  let totalCount = sum $ map fst objs
-  shuffled <- chooseRandom totalCount emptyTiles
-  return $ Grid $ unGrid grid // addObjects objs (map fst shuffled)
+  let totalCount = length objs
+  shuffledIndices <- map fst <$> chooseRandom totalCount emptyTiles
+  return $ Grid $ unGrid grid // zip shuffledIndices objs
 
 addWaterToGrid :: Grid -> IO Grid
 addWaterToGrid grid = do
@@ -114,6 +108,7 @@ generateMap = do
 picturizeGrid :: Grid -> IO G.Picture
 picturizeGrid grid = do
   tTil <- T.terrainTiles
+  tObj <- T.terrainObjects
   let 
     randomTile :: [T.Tile] -> IO T.Tile
     randomTile ts = head <$> chooseRandom 1 ts
@@ -131,11 +126,21 @@ picturizeGrid grid = do
     tileMapM TT.RoadDownRight  = return $ T.roadTopLeftSharp tTil
     tileMapM TT.RoadCrossing   = return $ T.roadCrossing tTil
     tileMapM TT.Grass          = return $ T.grass tTil
-    tileMapM TT.GreenTree      = randomTile =<< T.greenTrees
-    tileMapM TT.BrownTree      = randomTile =<< T.brownTrees
-    tileMapM TT.Rock           = randomTile =<< T.rocks
-    tileMapM TT.Bush           = randomTile =<< T.bushes
-    -- TODO fix water
+    tileMapM TT.GreenTree1     = return $ T.greenTree1 tObj
+    tileMapM TT.GreenTree2     = return $ T.greenTree2 tObj
+    tileMapM TT.GreenTree3     = return $ T.greenTree3 tObj
+    tileMapM TT.GreenTree4     = return $ T.greenTree4 tObj
+    tileMapM TT.BrownTree1     = return $ T.brownTree1 tObj
+    tileMapM TT.BrownTree2     = return $ T.brownTree2 tObj
+    tileMapM TT.BrownTree3     = return $ T.brownTree3 tObj
+    tileMapM TT.BrownTree4     = return $ T.brownTree4 tObj
+    tileMapM TT.Rock1          = return $ T.rock1 tObj
+    tileMapM TT.Rock2          = return $ T.rock2 tObj
+    tileMapM TT.Rock3          = return $ T.rock3 tObj
+    tileMapM TT.Rock4          = return $ T.rock4 tObj
+    tileMapM TT.Bush1          = return $ T.bush1 tObj
+    tileMapM TT.Bush2          = return $ T.bush2 tObj
+
     tileMapM TT.Water          = return $ T.roadCrossing tTil
 
   grassBg <- grassBackground

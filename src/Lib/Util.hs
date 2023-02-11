@@ -6,13 +6,16 @@ module Lib.Util
   , inRangeF
   , count
   , chooseRandom
+  , chooseRandomReplacement
   , both
   , distance
   , angle
   , headOrDefault
   ) where
 
+import System.Random (randomRIO)
 import System.Random.Shuffle (shuffleM)
+import Control.Monad (replicateM)
 
 cartProd :: [a] -> [b] -> [(a, b)]
 cartProd xs ys = [(x,y) | x <- xs, y <- ys]
@@ -34,6 +37,9 @@ count p = length . filter p
 
 chooseRandom :: Int -> [a] -> IO [a]
 chooseRandom n xs = take n <$> shuffleM xs
+
+chooseRandomReplacement :: Int -> [a] -> IO [a]
+chooseRandomReplacement n xs = replicateM n $ (xs !!) <$> randomRIO (0, length xs - 1)
 
 both :: (a -> b) -> (a, a) -> (b, b)
 both f (x, y) = (f x, f y)
