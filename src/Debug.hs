@@ -7,7 +7,6 @@ module Debug
   , debugTerrain
   , debugPoint
   , debugPointWithCoords
-  , debugExampleTerrain
   ) where
 
 -- TODO WIP
@@ -103,30 +102,3 @@ debugTerrain = do
     , mkStaticSprite  (-20) (-320) $ T.picture $ T.roadBottomRightSharp tTil
     , mkStaticSprite    180    300 $ T.picture $ T.grass tTil
     ]
-
-debugExampleTerrain :: IO G.Picture
-debugExampleTerrain = do
-  tTil <- T.terrainTiles
-  tObj <- T.terrainObjects
-  let 
-    --grassField = pictures [T.drawTile x y $ T.grass tTil | x <- [0..gridCols-1], y <- [0..gridRows-1]]
-    terrainTiles = T.Terrain
-      [ ( 0, 0, T.roadTopLeft tTil)
-      , ( 2, 1, T.roadBottomRight tTil)
-      , ( 3, 3, T.roadVertical tTil)
-      , ( 3, 4, T.roadVertical tTil)
-      , ( 3, 5, T.roadVertical tTil)
-      , ( 3, 6, T.roadTopLeftSharp tTil)
-      , ( 4, 6, T.roadHorizontal tTil)
-      , ( 5, 6, T.roadHorizontal tTil)
-      , ( 6, 6, T.roadHorizontal tTil)
-      , ( 7, 6, T.roadCrossing tTil)
-      , ( 7, 4, T.roadBottomLeft tTil)
-      , ( 8, 6, T.roadHorizontal tTil)
-      , ( 9, 6, T.roadHorizontal tTil)
-      , (10, 6, T.horizontalBridge tObj)
-      , ( 9, 4, T.roadTopRightSharp tTil)
-      , ( 9, 3, T.roadBottomRightSharp tTil)
-      , ( 8, 3, T.roadHorizontal tTil)
-      ]
-  return $ T.drawTerrain terrainTiles

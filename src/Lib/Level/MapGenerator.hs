@@ -14,6 +14,7 @@ import Lib.Level.Path (Path, genRandomPath, addPathToGrid)
 -- import Lib.Level.Point (genStartEndPoints)
 import qualified Lib.Level.TileType as TT
 import Lib.Util (chooseRandom, chooseRandomReplacement)
+import qualified GameObjects.Sprite as S
 import qualified GameObjects.Terrain as T
 import Graphics.Gloss (pictures)
 import qualified Lib.Level.Point as P
@@ -31,7 +32,6 @@ data Map = Map
   , path :: Path
   }
 
-
 greenTreeRange :: (Int, Int)
 greenTreeRange = (8, 12)
 
@@ -45,17 +45,12 @@ bushRange :: (Int, Int)
 bushRange = (4, 6)
 
 objectsToAdd :: IO [TT.TileType]
-objectsToAdd = do
-  grTreeCount <- randomRIO greenTreeRange
-  brTreeCount <- randomRIO brownTreeRange
-  rockCount   <- randomRIO rockRange
-  bushCount   <- randomRIO bushRange
-  concat <$> sequence
-    [ chooseRandomReplacement grTreeCount TT.greenTrees
-    , chooseRandomReplacement brTreeCount TT.brownTrees
-    , chooseRandomReplacement rockCount   TT.rocks
-    , chooseRandomReplacement bushCount   TT.bushes
-    ]
+objectsToAdd = concat <$> sequence
+  [ flip chooseRandomReplacement TT.greenTrees =<< randomRIO greenTreeRange
+  , flip chooseRandomReplacement TT.brownTrees =<< randomRIO brownTreeRange
+  , flip chooseRandomReplacement TT.rocks      =<< randomRIO rockRange
+  , flip chooseRandomReplacement TT.bushes     =<< randomRIO bushRange
+  ]
 
 addObjectsToGrid :: Grid -> IO Grid
 addObjectsToGrid grid = do
@@ -95,9 +90,9 @@ addWaterToGrid grid = do
   -- TODO I was here
   return $ Grid $ unGrid grid // map (,TT.Water) (getPath start end)
 
-drawTerraineWithMap :: (TT.TileType -> IO T.Tile) -> Grid -> IO G.Picture
-drawTerraineWithMap tf grid = T.drawTerrain . T.Terrain <$> mapM tTypeF (assocs $ unGrid grid)
-  where tTypeF ((x, y), tType) = (x, y,) <$> tf tType
+drawTerraineWithMap :: (TT.TileType -> T.Tile) -> Grid -> G.Picture
+drawTerraineWithMap tf = G.pictures . map (S.draw 0 . T.mkSpriteFromTile . tTypeF) . assocs . unGrid
+  where tTypeF ((x, y), tType) = (x, y, tf tType)
 
 generateMap :: IO Map
 generateMap = do
@@ -109,41 +104,38 @@ picturizeGrid :: Grid -> IO G.Picture
 picturizeGrid grid = do
   tTil <- T.terrainTiles
   tObj <- T.terrainObjects
-  let 
-    randomTile :: [T.Tile] -> IO T.Tile
-    randomTile ts = head <$> chooseRandom 1 ts
+  let
 
-    grassBackground :: IO G.Picture
-    grassBackground = drawTerraineWithMap (const $ return $ T.grass tTil) emptyGrid
+    grassBackground :: G.Picture
+    grassBackground = drawTerraineWithMap (const $ T.grass tTil) emptyGrid
 
-    tileMapM :: TT.TileType -> IO T.Tile
-    tileMapM TT.Empty          = return $ T.grass tTil
-    tileMapM TT.RoadHorizontal = return $ T.roadHorizontal tTil
-    tileMapM TT.RoadVertical   = return $ T.roadVertical tTil
-    tileMapM TT.RoadUpLeft     = return $ T.roadBottomRightSharp tTil
-    tileMapM TT.RoadUpRight    = return $ T.roadBottomLeftSharp tTil
-    tileMapM TT.RoadDownLeft   = return $ T.roadTopRightSharp tTil
-    tileMapM TT.RoadDownRight  = return $ T.roadTopLeftSharp tTil
-    tileMapM TT.RoadCrossing   = return $ T.roadCrossing tTil
-    tileMapM TT.Grass          = return $ T.grass tTil
-    tileMapM TT.GreenTree1     = return $ T.greenTree1 tObj
-    tileMapM TT.GreenTree2     = return $ T.greenTree2 tObj
-    tileMapM TT.GreenTree3     = return $ T.greenTree3 tObj
-    tileMapM TT.GreenTree4     = return $ T.greenTree4 tObj
-    tileMapM TT.BrownTree1     = return $ T.brownTree1 tObj
-    tileMapM TT.BrownTree2     = return $ T.brownTree2 tObj
-    tileMapM TT.BrownTree3     = return $ T.brownTree3 tObj
-    tileMapM TT.BrownTree4     = return $ T.brownTree4 tObj
-    tileMapM TT.Rock1          = return $ T.rock1 tObj
-    tileMapM TT.Rock2          = return $ T.rock2 tObj
-    tileMapM TT.Rock3          = return $ T.rock3 tObj
-    tileMapM TT.Rock4          = return $ T.rock4 tObj
-    tileMapM TT.Bush1          = return $ T.bush1 tObj
-    tileMapM TT.Bush2          = return $ T.bush2 tObj
+    tileMapM :: TT.TileType -> T.Tile
+    tileMapM TT.Empty          = T.grass tTil
+    tileMapM TT.RoadHorizontal = T.roadHorizontal tTil
+    tileMapM TT.RoadVertical   = T.roadVertical tTil
+    tileMapM TT.RoadUpLeft     = T.roadBottomRightSharp tTil
+    tileMapM TT.RoadUpRight    = T.roadBottomLeftSharp tTil
+    tileMapM TT.RoadDownLeft   = T.roadTopRightSharp tTil
+    tileMapM TT.RoadDownRight  = T.roadTopLeftSharp tTil
+    tileMapM TT.RoadCrossing   = T.roadCrossing tTil
+    tileMapM TT.Grass          = T.grass tTil
+    tileMapM TT.GreenTree1     = T.greenTree1 tObj
+    tileMapM TT.GreenTree2     = T.greenTree2 tObj
+    tileMapM TT.GreenTree3     = T.greenTree3 tObj
+    tileMapM TT.GreenTree4     = T.greenTree4 tObj
+    tileMapM TT.BrownTree1     = T.brownTree1 tObj
+    tileMapM TT.BrownTree2     = T.brownTree2 tObj
+    tileMapM TT.BrownTree3     = T.brownTree3 tObj
+    tileMapM TT.BrownTree4     = T.brownTree4 tObj
+    tileMapM TT.Rock1          = T.rock1 tObj
+    tileMapM TT.Rock2          = T.rock2 tObj
+    tileMapM TT.Rock3          = T.rock3 tObj
+    tileMapM TT.Rock4          = T.rock4 tObj
+    tileMapM TT.Bush1          = T.bush1 tObj
+    tileMapM TT.Bush2          = T.bush2 tObj
+    tileMapM TT.Water          = T.roadCrossing tTil
 
-    tileMapM TT.Water          = return $ T.roadCrossing tTil
-
-  grassBg <- grassBackground
-  terrainPic <- drawTerraineWithMap tileMapM grid
+    grassBg = grassBackground
+    terrainPic = drawTerraineWithMap tileMapM grid
   return $ pictures [grassBg, terrainPic]
     
