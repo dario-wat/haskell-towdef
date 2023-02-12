@@ -25,8 +25,6 @@ data GameState = GameState
   , gmap :: Map
   , sprites :: HM.HashMap String S.Sprite
   , enemyManager :: E.EnemyManager
-  , water :: A.Animation
-  , watera2 :: A.Animation
   }
 
 mkGameState :: IO GameState
@@ -40,7 +38,7 @@ mkGameState = do
   fwa <- E.firewaspAnimations
   fla <- E.flyingLocustAnimations
   vba <- E.voidbutterflyAnimations
-  wa <- W.waterAnimations
+  -- wa <- W.waterAnimations
   gmap <- generateMap
   let (sx, sy) = gridCenterOf (head $ path gmap) (1, 1)
   return $ GameState
@@ -58,8 +56,6 @@ mkGameState = do
         allAnimations 
         [(E.Firebug, 0), (E.Leafbug, 1), (E.MagmaCrab, 1.5), (E.Scorpion, 2), (E.Clampbeetle, 8)] 
         (path gmap)
-    , water = A.mkInfAnimation $ W.fullFish wa
-    , watera2 = A.mkInfAnimation $ W.fullBubbles2 wa
     }
 
 window :: Display
@@ -102,8 +98,6 @@ main = do
       -- , S.draw (time world) (sprites world HM.! "voidbutterfly")
       -- , E.draw (time world) (enemy world)
       , E.draw (time world) (enemyManager world)
-      , A.draw (time world) (water world)
-      , G.translate 64 0 $ A.draw (time world) (watera2 world)
       -- , debugGrid
       -- , debugPoint (-220) 200
       -- , uncurry debugPoint $ gridCenterOf (gridCellOf (-220, 200)) (1, 1)
@@ -118,8 +112,6 @@ main = do
      , \_ world -> world 
         { sprites = HM.map (S.update $ time world) $ sprites world
         , enemyManager = E.update (time world) (enemyManager world)
-        , water = A.update (time world) (water world)
-        , watera2 = A.update (time world) (watera2 world)
         }
     
     ]

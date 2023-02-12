@@ -1,21 +1,22 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 module GameObjects.Terrain
   ( Tile(..)
   , TerrainObjects(..)
   , TerrainTiles(..)
-  , WaterAnimations(..)
+  , WaterTiles(..)
   , terrainObjects
   , terrainTiles
   , mkSpriteFromTile
-  , waterAnimations
+  , waterTiles
   ) where
 
 import Codec.Picture (DynamicImage, convertRGBA8)
 import Codec.Picture.Extra (crop)
-import Graphics.Gloss (Picture)
 import ThirdParty.GraphicsGlossJuicy (fromImageRGBA8)
 import ThirdParty.GraphicsGlossGame (animation)
 import Const (spriteWidth, spriteHeight)
-import Lib.Animation (MkAnimation)
+import Lib.Animation (mkInfAnimation)
 import qualified GameObjects.Sprite as S
 import Lib.Image (readPngOrError)
 import Lib.Level.Grid (gridCenterOf)
@@ -25,11 +26,10 @@ import Lib.Spritesheet (animFrames)
 -- 1. Will likely need to do the usual draw + update thing for water
 
 data Tile = Tile 
-  { picture :: !Picture
-  , width   :: !Int
-  , height  :: !Int
-  } 
-  deriving (Show, Eq)
+  { visual :: !S.Visual
+  , w      :: !Int
+  , h      :: !Int
+  }
 
 type TileOnGrid = (Int, Int, Tile)
 
@@ -42,6 +42,9 @@ tileHeight = spriteHeight
 readTerrainImage :: IO DynamicImage
 readTerrainImage = readPngOrError "assets/grass_tileset.png"
 
+readWaterTilesetImage :: IO DynamicImage
+readWaterTilesetImage = readPngOrError "assets/water_tileset.png"
+
 -- r and c are the coordinates of the tile in the tileset
 cropTile :: Int -> Int -> DynamicImage -> Tile
 cropTile r c = cropTiles r c 1 1
@@ -49,7 +52,7 @@ cropTile r c = cropTiles r c 1 1
 -- r and c are the coordinates of the tile in the tileset
 -- w and h are the number of tiles representing width and height
 cropTiles :: Int -> Int -> Int -> Int -> DynamicImage -> Tile
-cropTiles r c w h img = Tile (fromImageRGBA8 $ cropFn $ convertRGBA8 img) w h
+cropTiles r c w h img = Tile (S.Pic $ fromImageRGBA8 $ cropFn $ convertRGBA8 img) w h
   where cropFn = crop (c * tileWidth) (r * tileHeight) (w * tileWidth) (h * tileHeight)
 
 -- | Creates a sprite from a tile.
@@ -57,7 +60,9 @@ cropTiles r c w h img = Tile (fromImageRGBA8 $ cropFn $ convertRGBA8 img) w h
 -- tile is 3x3, the given row and column will be the coordinates of the grid
 -- where the bottom left cell will be drawn.
 mkSpriteFromTile :: TileOnGrid -> S.Sprite
-mkSpriteFromTile (x, y, Tile pic w h) = S.mkStaticSprite xc yc pic
+mkSpriteFromTile (x, y, Tile{visual=S.Pic pic,   w, h}) = S.mkStaticSprite xc yc pic
+  where (xc, yc) = gridCenterOf (x, y) (w, h)
+mkSpriteFromTile (x, y, Tile{visual=S.Anim anim, w, h}) = S.mkAnimatedSprite xc yc anim
   where (xc, yc) = gridCenterOf (x, y) (w, h)
 
 data TerrainObjects = TerrainObjects
@@ -150,52 +155,62 @@ terrainTiles = do
     , roadHorizontal       = cropTile  1  6 im
     }
 
-data WaterAnimations = WaterAnimations
-  { left               :: !MkAnimation
-  , right              :: !MkAnimation
-  , top                :: !MkAnimation
-  , bottom             :: !MkAnimation
-  , topLeftConcave     :: !MkAnimation
-  , topRightConcave    :: !MkAnimation
-  , bottomLeftConcave  :: !MkAnimation
-  , bottomRightConcave :: !MkAnimation
-  , topLeftConvex      :: !MkAnimation
-  , topRightConvex     :: !MkAnimation
-  , bottomLeftConvex   :: !MkAnimation
-  , bottomRightConvex  :: !MkAnimation
-  , fullCalm           :: !MkAnimation
-  , fullWave1          :: !MkAnimation
-  , fullWave2          :: !MkAnimation
-  , fullWave3          :: !MkAnimation
-  , fullBubbles1       :: !MkAnimation
-  , fullBubbles2       :: !MkAnimation
-  , fullFish           :: !MkAnimation
+data WaterTiles = WaterTiles
+  { left               :: !Tile
+  , right              :: !Tile
+  , top                :: !Tile
+  , bottom             :: !Tile
+  , topLeftConcave     :: !Tile
+  , topRightConcave    :: !Tile
+  , bottomLeftConcave  :: !Tile
+  , bottomRightConcave :: !Tile
+  , topLeftConvex      :: !Tile
+  , topRightConvex     :: !Tile
+  , bottomLeftConvex   :: !Tile
+  , bottomRightConvex  :: !Tile
+  , fullCalm           :: !Tile
+  , fullWave1          :: !Tile
+  , fullWave2          :: !Tile
+  , fullWave3          :: !Tile
+  , fullBubbles1       :: !Tile
+  , fullBubbles2       :: !Tile
+  , fullFish           :: !Tile
   }
 
-waterAnimations :: IO WaterAnimations
-waterAnimations = do
-  img <- readPngOrError "assets/water_tileset.png"
+waterTiles :: IO WaterTiles
+waterTiles = do
+  img <- readWaterTilesetImage
   let 
-    waterAnimation (r, c) = animation (animFrames size (r, c, 10, 7) img) 0.1
+    waterTile (r, c) = Tile
+      { visual = S.Anim 
+          $ mkInfAnimation 
+          $ animation (animFrames size (r, c, frameCount, tileStep) img) animDt
+      , w
+      , h
+      }
     size = (64, 64)
-  return $ WaterAnimations
-    { left               = waterAnimation (3, 0)
-    , right              = waterAnimation (3, 6)
-    , top                = waterAnimation (0, 3)
-    , bottom             = waterAnimation (6, 3)
-    , topLeftConcave     = waterAnimation (4, 4)
-    , topRightConcave    = waterAnimation (4, 2)
-    , bottomLeftConcave  = waterAnimation (2, 4)
-    , bottomRightConcave = waterAnimation (2, 2)
-    , topLeftConvex      = waterAnimation (0, 2)
-    , topRightConvex     = waterAnimation (0, 4)
-    , bottomLeftConvex   = waterAnimation (6, 2)
-    , bottomRightConvex  = waterAnimation (6, 4)
-    , fullCalm           = waterAnimation (5, 3)
-    , fullWave1          = waterAnimation (1, 3)
-    , fullWave2          = waterAnimation (3, 3)
-    , fullWave3          = waterAnimation (1, 3)
-    , fullBubbles1       = waterAnimation (3, 4)
-    , fullBubbles2       = waterAnimation (3, 5)
-    , fullFish           = waterAnimation (4, 3)
+    frameCount = 10
+    tileStep = 7
+    animDt = 0.1
+    (w, h) = (1, 1)
+  return $ WaterTiles
+    { left               = waterTile (3, 0)
+    , right              = waterTile (3, 6)
+    , top                = waterTile (0, 3)
+    , bottom             = waterTile (6, 3)
+    , topLeftConcave     = waterTile (4, 4)
+    , topRightConcave    = waterTile (4, 2)
+    , bottomLeftConcave  = waterTile (2, 4)
+    , bottomRightConcave = waterTile (2, 2)
+    , topLeftConvex      = waterTile (0, 2)
+    , topRightConvex     = waterTile (0, 4)
+    , bottomLeftConvex   = waterTile (6, 2)
+    , bottomRightConvex  = waterTile (6, 4)
+    , fullCalm           = waterTile (5, 3)
+    , fullWave1          = waterTile (1, 3)
+    , fullWave2          = waterTile (3, 3)
+    , fullWave3          = waterTile (1, 3)
+    , fullBubbles1       = waterTile (3, 4)
+    , fullBubbles2       = waterTile (3, 5)
+    , fullFish           = waterTile (4, 3)
     }

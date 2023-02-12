@@ -104,6 +104,7 @@ picturizeGrid :: Grid -> IO G.Picture
 picturizeGrid grid = do
   tTil <- T.terrainTiles
   tObj <- T.terrainObjects
+  wTil <- T.waterTiles
   let
 
     grassBackground :: G.Picture
@@ -133,7 +134,7 @@ picturizeGrid grid = do
     tileMapM TT.Rock4          = T.rock4 tObj
     tileMapM TT.Bush1          = T.bush1 tObj
     tileMapM TT.Bush2          = T.bush2 tObj
-    tileMapM TT.Water          = T.roadCrossing tTil
+    tileMapM TT.Water          = T.fullWave1 wTil
 
     grassBg = grassBackground
     terrainPic = drawTerraineWithMap tileMapM grid
