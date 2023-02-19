@@ -10,7 +10,8 @@ import qualified Lib.Enemy.Types as E
 import qualified Lib.Enemy.Manager as E
 import qualified GameObjects.Enemy as E hiding (update, draw)
 import qualified GameObjects.Sprite as S
-import Lib.Level.Path (genRandomPath, addPathToGrid, Path)
+import Lib.Level.Path (Path)
+import Lib.Level.EnemyPathDef (genRandomPath, addPathToGrid)
 import Lib.Level.Grid (emptyGrid, debugGrid, gridCellOf, gridCenterOf, gridArrayStr)
 import qualified Lib.Level.Map as M
 import qualified Lib.Animation as A

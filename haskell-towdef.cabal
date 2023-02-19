@@ -35,6 +35,7 @@ library
       Lib.Enemy.Manager
       Lib.Enemy.Types
       Lib.Image
+      Lib.Level.EnemyPathDef
       Lib.Level.Grid
       Lib.Level.Map
       Lib.Level.Path

@@ -12,7 +12,8 @@ import System.Random (randomRIO)
 import Data.Array (assocs, (//))
 import qualified Graphics.Gloss as G
 import Lib.Level.Grid (Grid(..), emptyGrid)
-import Lib.Level.Path (Path, genRandomPath, addPathToGrid)
+import Lib.Level.Path (Path)
+import Lib.Level.EnemyPathDef (genRandomPath, addPathToGrid)
 -- import Lib.Level.Point (genStartEndPoints)
 import qualified Lib.Level.TileType as TT
 import Lib.Util (chooseRandom, chooseRandomReplacement)
