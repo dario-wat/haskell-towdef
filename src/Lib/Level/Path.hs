@@ -14,19 +14,21 @@ module Lib.Level.Path
 import Prelude hiding (Left, Right)
 import System.Random (randomRIO)
 import Data.Array ((//))
+import Data.Bifunctor ( Bifunctor(second) )
 import Data.Ix (Ix(inRange))
 import Data.List (group, nub)
 import Data.Maybe (mapMaybe, isJust)
 import qualified Control.Monad.HT as M (until)
 import qualified Graphics.Gloss as GL
 import qualified Lib.Level.Grid as G
+import qualified Lib.Level.PathSegment as PS
 import qualified Lib.Level.Point as P
-import Lib.Util (cartProd, manhattanDist, inRangeAbsExcl, count)
+import Lib.Util (cartProd, manhattanDist, count)
 import qualified Lib.Level.TileType as TT
 import Lib.Level.Point (PointLocation(EdgeExcl))
 
 type Path = [P.Point]
-type PathSegment = (P.Point, P.Point)
+
 
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
@@ -54,16 +56,13 @@ isValidPath [_]  = False
 isValidPath path = 
   hasNoOverlap path
   && inRange pathLengthRange (pathLength path)
-  && inRange crossingCountRange (crossingCount path)
-  && (not . any segmentIsEdge) (pathSegments path)
-  && quadrantCount path >= 3
+  && inRange crossingCountRange (pathCrossingCount path)
+  && (not . any PS.isEdge) (pathSegments path)
+  && pathQuadrantCount path >= 3
   && hasNoAdjacentSegments path
   where
-    hasNoOverlap = not . any (uncurry segmentOverlap) . allSegmentPairs
-    crossingCount = count (isJust . uncurry segmentCrossing) . allSegmentPairs
-    pathLength = (+1) . sum . map (uncurry manhattanDist) . pathSegments
-    quadrantCount = length . nub . map P.quadrant
-    hasNoAdjacentSegments = not . any (uncurry segmentAdjacent) . allSegmentPairs
+    hasNoOverlap = not . pathHasOverlap
+    hasNoAdjacentSegments = not . pathHasAdjacentSegment
     
 -- | Generates a single random path that satisfies all validity requirements.
 genRandomPath :: IO Path
@@ -83,12 +82,37 @@ addPathToGrid grid path = G.Grid $ G.unGrid grid // pathIndices // turnIndices /
       | x1 == x2  = [((x1, y), TT.RoadVertical)   | y <- [min y1 y2 .. max y1 y2]]
       | y1 == y2  = [((x, y1), TT.RoadHorizontal) | x <- [min x1 x2 .. max x1 x2]]
       | otherwise = error "markGridRoads: impossible"
-    turnIndices = mapMaybe (uncurry segmentCornerType) $ allSegmentPairs path
+    turnIndices = mapMaybe roadType $ allSegmentPairs path
     crossingIndices = 
-      map (,TT.RoadCrossing) $ mapMaybe (uncurry segmentCrossing) $ allSegmentPairs path
+      map (,TT.RoadCrossing) $ mapMaybe (uncurry PS.crossing) $ allSegmentPairs path
+    roadType = (second cornerTypeToTileType <$>) . uncurry PS.cornerType
+    cornerTypeToTileType PS.TopLeft = TT.RoadUpRight
+    cornerTypeToTileType PS.TopRight = TT.RoadUpLeft
+    cornerTypeToTileType PS.BottomLeft = TT.RoadDownRight
+    cornerTypeToTileType PS.BottomRight = TT.RoadDownLeft
 
 toGlossPath :: Path -> GL.Path
 toGlossPath = map (`G.gridCenterOf` (1, 1))
+
+-------------------------------------------------------------------------------
+-- Path lib
+-------------------------------------------------------------------------------
+
+pathHasAdjacentSegment :: Path -> Bool
+pathHasAdjacentSegment = any (uncurry PS.areAdjacent) . allSegmentPairs
+
+pathLength :: Path -> Int
+pathLength = (+1) . sum . map (uncurry manhattanDist) . pathSegments
+
+pathHasOverlap :: Path -> Bool
+pathHasOverlap = any (uncurry PS.haveOverlap) . allSegmentPairs
+
+pathCrossingCount :: Path -> Int
+pathCrossingCount = count (isJust . uncurry PS.crossing) . allSegmentPairs
+
+pathQuadrantCount :: Path -> Int
+pathQuadrantCount = length . nub . map P.quadrant
+
 
 -------------------------------------------------------------------------------
 -- Path creation
@@ -138,63 +162,9 @@ createAllPaths = map removeConsecutiveDuplicates . combinePaths . connectAllPoin
 -- Path segments
 -------------------------------------------------------------------------------
 
-pathSegments :: Path -> [PathSegment]
+pathSegments :: Path -> [PS.PathSegment]
 pathSegments path = zip path (tail path)
 
-allSegmentPairs :: Path -> [(PathSegment, PathSegment)]
+allSegmentPairs :: Path -> [(PS.PathSegment, PS.PathSegment)]
 allSegmentPairs path = filter (uncurry (/=)) $ cartProd allSegments allSegments
   where allSegments = pathSegments path
-
--- | Checks whether two ranges overlap. Inputs don't have to be sorted.
-rangeOverlap :: (Int, Int) -> (Int, Int) -> Bool
-rangeOverlap (a1, a2) (b1, b2)
-  | a1 > a2   = rangeOverlap (a2, a1) (b1, b2)
-  | b1 > b2   = rangeOverlap (a1, a2) (b2, b1)
-  | a1 > b1   = rangeOverlap (b1, b2) (a1, a2)
-  | a2 <= b1  = False
-  | otherwise = True
-
--- | Checks whether two path segments overlap
-segmentOverlap :: PathSegment -> PathSegment -> Bool
-segmentOverlap ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
-  | all (== x1) [x2, x3, x4] = rangeOverlap (y1, y2) (y3, y4)
-  | all (== y1) [y2, y3, y4] = rangeOverlap (x1, x2) (x3, x4)
-  | otherwise                = False
-
-segmentAdjacent :: PathSegment -> PathSegment -> Bool
-segmentAdjacent ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4)) =
-  x1 == x2 && x3 == x4 && abs (x1 - x3) == 1 && rangeOverlap (y1, y2) (y3, y4) ||
-  y1 == y2 && y3 == y4 && abs (y1 - y3) == 1 && rangeOverlap (x1, x2) (x3, x4)
-  
--- There might be a bug here
--- | Finds a crossing point between two segments if there is one
-segmentCrossing :: PathSegment -> PathSegment -> Maybe P.Point
-segmentCrossing ((x1, y1), (x2, y2)) ((x3, y3), (x4, y4))
-  | x1 == x2 && y3 == y4 && inRangeAbsExcl (x3, x4) x1 && inRangeAbsExcl (y1, y2) y3 = Just (x1, y3)
-  | x3 == x4 && y1 == y2 && inRangeAbsExcl (x1, x2) x3 && inRangeAbsExcl (y3, y4) y1 = Just (x3, y1)
-  | otherwise = Nothing
-
--- | Finds a corner between two segments if there is one
-segmentCornerType :: PathSegment -> PathSegment -> Maybe (P.Point, TT.TileType)
-segmentCornerType (a1, b1) (a2, b2)
-  | a1 == a2 && b1 == b2 || a1 == b2 && b1 == a2 = Nothing
-  | a1 == a2 = getCornerType b1 a1 b2
-  | a1 == b2 = getCornerType b1 a1 a2
-  | b1 == a2 = getCornerType a1 b1 b2
-  | b1 == b2 = getCornerType a1 b1 a2
-  | otherwise = Nothing
-  where
-    getCornerType (x1, y1) p@(x2, y2) (x3, y3)
-      | x1 == x3 || y1 == y3 = Nothing    -- Not a corner (straight line)
-      | x1 > x3              = getCornerType (x3, y3) (x2, y2) (x1, y1)
-      | x1 < x2  && y3 > y2  = Just (p, TT.RoadUpLeft)
-      | x1 < x2  && y3 < y2  = Just (p, TT.RoadDownLeft)
-      | x1 == x2 && y1 < y2  = Just (p, TT.RoadDownRight)
-      | x1 == x2 && y1 > y2  = Just (p, TT.RoadUpRight)
-      | otherwise            = Nothing
-
-segmentIsEdge :: PathSegment -> Bool
-segmentIsEdge ((x1, y1), (x2, y2)) = isVerticalEdge || isHorizontalEdge
-  where
-    isVerticalEdge = x1 == x2 && (x1 == 0 || x1 == G.gridCols - 1)
-    isHorizontalEdge = y1 == y2 && (y1 == 0 || y1 == G.gridRows - 1)

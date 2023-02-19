@@ -25,6 +25,7 @@ import qualified Lib.Level.Point as P
 -- WIP
 -- Make corners rounded
 -- Water generate and draw
+-- Refactor path so that it can be used for water
 
 data Map = Map
   { grid  :: !Grid
