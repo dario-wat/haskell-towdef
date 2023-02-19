@@ -1,8 +1,9 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TupleSections #-}
 
-module Lib.Level.MapGenerator 
+module Lib.Level.Map
   ( Map(..) 
-  , picturizeGrid
+  , draw
   , generateMap
   ) where
 
@@ -30,6 +31,9 @@ import qualified Lib.Level.Point as P
 data Map = Map
   { grid :: Grid
   , path :: Path
+  , tObj :: T.TerrainObjects
+  , tTil :: T.TerrainTiles
+  , tWtr :: T.WaterTiles
   }
 
 greenTreeRange :: (Int, Int)
@@ -90,6 +94,7 @@ addWaterToGrid grid = do
   -- TODO I was here
   return $ Grid $ unGrid grid // map (,TT.Water) (getPath start end)
 
+-- TODO do time here
 drawTerraineWithMap :: (TT.TileType -> T.Tile) -> Grid -> G.Picture
 drawTerraineWithMap tf = G.pictures . map (S.draw 0 . T.mkSpriteFromTile . tTypeF) . assocs . unGrid
   where tTypeF ((x, y), tType) = (x, y, tf tType)
@@ -98,15 +103,14 @@ generateMap :: IO Map
 generateMap = do
   path <- genRandomPath
   grid <- addWaterToGrid =<< addObjectsToGrid (addPathToGrid emptyGrid path)
-  return $ Map grid path
-
-picturizeGrid :: Grid -> IO G.Picture
-picturizeGrid grid = do
   tTil <- T.terrainTiles
   tObj <- T.terrainObjects
-  wTil <- T.waterTiles
-  let
+  tWtr <- T.waterTiles
+  return $ Map grid path tObj tTil tWtr
 
+draw :: Float -> Map -> G.Picture
+draw time Map{grid, path, tTil, tObj, tWtr} = pictures [grassBg, terrainPic]
+  where
     grassBackground :: G.Picture
     grassBackground = drawTerraineWithMap (const $ T.grass tTil) emptyGrid
 
@@ -134,9 +138,8 @@ picturizeGrid grid = do
     tileMapM TT.Rock4          = T.rock4 tObj
     tileMapM TT.Bush1          = T.bush1 tObj
     tileMapM TT.Bush2          = T.bush2 tObj
-    tileMapM TT.Water          = T.fullWave1 wTil
+    tileMapM TT.Water          = T.fullWave1 tWtr
 
     grassBg = grassBackground
     terrainPic = drawTerraineWithMap tileMapM grid
-  return $ pictures [grassBg, terrainPic]
     

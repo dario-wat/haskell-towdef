@@ -12,7 +12,7 @@ import qualified GameObjects.Enemy as E hiding (update, draw)
 import qualified GameObjects.Sprite as S
 import Lib.Level.Path (genRandomPath, addPathToGrid, Path)
 import Lib.Level.Grid (emptyGrid, debugGrid, gridCellOf, gridCenterOf, gridArrayStr)
-import Lib.Level.MapGenerator (Map(..), picturizeGrid, generateMap)
+import qualified Lib.Level.Map as M
 import qualified Lib.Animation as A
 import Debug (debugPoint)
 import qualified GameObjects.Terrain as W
@@ -22,7 +22,7 @@ import qualified GameObjects.Terrain as W
 
 data GameState = GameState
   { time :: Float
-  , gmap :: Map
+  , gmap :: M.Map
   , sprites :: HM.HashMap String S.Sprite
   , enemyManager :: E.EnemyManager
   }
@@ -39,8 +39,8 @@ mkGameState = do
   fla <- E.flyingLocustAnimations
   vba <- E.voidbutterflyAnimations
   -- wa <- W.waterAnimations
-  gmap <- generateMap
-  let (sx, sy) = gridCenterOf (head $ path gmap) (1, 1)
+  gmap <- M.generateMap
+  let (sx, sy) = gridCenterOf (head $ M.path gmap) (1, 1)
   return $ GameState
     { time = 0
     , gmap
@@ -55,7 +55,7 @@ mkGameState = do
     , enemyManager = E.mkEnemyManager 
         allAnimations 
         [(E.Firebug, 0), (E.Leafbug, 1), (E.MagmaCrab, 1.5), (E.Scorpion, 2), (E.Clampbeetle, 8)] 
-        (path gmap)
+        (M.path gmap)
     }
 
 window :: Display
@@ -70,8 +70,8 @@ main = do
   gs <- mkGameState
 
   -- let grid = addPathToGrid emptyGrid (path $ gmap gs)
-  gridPic <- picturizeGrid $ grid $ gmap gs
-  putStrLn $ gridArrayStr $ grid $ gmap gs
+  -- gridPic <- picturizeGrid $ grid $ gmap gs
+  putStrLn $ gridArrayStr $ M.grid $ gmap gs
 
   -- let scorpion = sprites gs HM.! "scorpion"
   -- print (S.x scorpion, S.y scorpion)
@@ -81,7 +81,8 @@ main = do
   -- print $ fst $ nextDirection (S.x scorpion, S.y scorpion) (tail $ path gs)
   let
     allScenes = scenes 
-      [ picturing $ const $ pictures [gridPic]
+      [ 
+        --picturing $ const $ pictures [gridPic]
       ]
   play
     window 
@@ -97,7 +98,9 @@ main = do
       -- , S.draw (time world) (sprites world HM.! "flyinglocust")
       -- , S.draw (time world) (sprites world HM.! "voidbutterfly")
       -- , E.draw (time world) (enemy world)
+      , M.draw (time world) (gmap world)    -- has to be drawn first
       , E.draw (time world) (enemyManager world)
+      
       -- , debugGrid
       -- , debugPoint (-220) 200
       -- , uncurry debugPoint $ gridCenterOf (gridCellOf (-220, 200)) (1, 1)
