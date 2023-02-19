@@ -3,6 +3,7 @@
 
 module Lib.Level.Map
   ( Map(..) 
+  , update
   , draw
   , generateMap
   ) where
@@ -23,17 +24,12 @@ import qualified Lib.Level.Point as P
 -- TODO
 -- WIP
 -- Make corners rounded
--- Make enemies follow the path
 -- Water generate and draw
--- Use sprites for tiles
--- Might need draw + update
 
 data Map = Map
-  { grid :: Grid
-  , path :: Path
-  , tObj :: T.TerrainObjects
-  , tTil :: T.TerrainTiles
-  , tWtr :: T.WaterTiles
+  { grid  :: !Grid
+  , path  :: !Path
+  , tiles :: ![S.Sprite]
   }
 
 greenTreeRange :: (Int, Int)
@@ -94,52 +90,51 @@ addWaterToGrid grid = do
   -- TODO I was here
   return $ Grid $ unGrid grid // map (,TT.Water) (getPath start end)
 
--- TODO do time here
-drawTerraineWithMap :: (TT.TileType -> T.Tile) -> Grid -> G.Picture
-drawTerraineWithMap tf = G.pictures . map (S.draw 0 . T.mkSpriteFromTile . tTypeF) . assocs . unGrid
+-- | Creates a list of sprites given a grid and a function that maps a
+-- | TileType to a Tile.
+spritifyTiles :: (TT.TileType -> T.Tile) -> Grid -> [S.Sprite]
+spritifyTiles tf = map (T.mkSpriteFromTile . tTypeF) . assocs . unGrid
   where tTypeF ((x, y), tType) = (x, y, tf tType)
 
 generateMap :: IO Map
 generateMap = do
-  path <- genRandomPath
-  grid <- addWaterToGrid =<< addObjectsToGrid (addPathToGrid emptyGrid path)
   tTil <- T.terrainTiles
   tObj <- T.terrainObjects
   tWtr <- T.waterTiles
-  return $ Map grid path tObj tTil tWtr
+  let
+    tileMap :: TT.TileType -> T.Tile
+    tileMap TT.Empty          = T.grass tTil
+    tileMap TT.RoadHorizontal = T.roadHorizontal tTil
+    tileMap TT.RoadVertical   = T.roadVertical tTil
+    tileMap TT.RoadUpLeft     = T.roadBottomRightSharp tTil
+    tileMap TT.RoadUpRight    = T.roadBottomLeftSharp tTil
+    tileMap TT.RoadDownLeft   = T.roadTopRightSharp tTil
+    tileMap TT.RoadDownRight  = T.roadTopLeftSharp tTil
+    tileMap TT.RoadCrossing   = T.roadCrossing tTil
+    tileMap TT.Grass          = T.grass tTil
+    tileMap TT.GreenTree1     = T.greenTree1 tObj
+    tileMap TT.GreenTree2     = T.greenTree2 tObj
+    tileMap TT.GreenTree3     = T.greenTree3 tObj
+    tileMap TT.GreenTree4     = T.greenTree4 tObj
+    tileMap TT.BrownTree1     = T.brownTree1 tObj
+    tileMap TT.BrownTree2     = T.brownTree2 tObj
+    tileMap TT.BrownTree3     = T.brownTree3 tObj
+    tileMap TT.BrownTree4     = T.brownTree4 tObj
+    tileMap TT.Rock1          = T.rock1 tObj
+    tileMap TT.Rock2          = T.rock2 tObj
+    tileMap TT.Rock3          = T.rock3 tObj
+    tileMap TT.Rock4          = T.rock4 tObj
+    tileMap TT.Bush1          = T.bush1 tObj
+    tileMap TT.Bush2          = T.bush2 tObj
+    tileMap TT.Water          = T.fullWave1 tWtr
+
+    grassBackground = spritifyTiles (const $ T.grass tTil) emptyGrid
+  path <- genRandomPath
+  grid <- addWaterToGrid =<< addObjectsToGrid (addPathToGrid emptyGrid path)
+  return $ Map grid path $ grassBackground ++ spritifyTiles tileMap grid
 
 draw :: Float -> Map -> G.Picture
-draw time Map{grid, path, tTil, tObj, tWtr} = pictures [grassBg, terrainPic]
-  where
-    grassBackground :: G.Picture
-    grassBackground = drawTerraineWithMap (const $ T.grass tTil) emptyGrid
-
-    tileMapM :: TT.TileType -> T.Tile
-    tileMapM TT.Empty          = T.grass tTil
-    tileMapM TT.RoadHorizontal = T.roadHorizontal tTil
-    tileMapM TT.RoadVertical   = T.roadVertical tTil
-    tileMapM TT.RoadUpLeft     = T.roadBottomRightSharp tTil
-    tileMapM TT.RoadUpRight    = T.roadBottomLeftSharp tTil
-    tileMapM TT.RoadDownLeft   = T.roadTopRightSharp tTil
-    tileMapM TT.RoadDownRight  = T.roadTopLeftSharp tTil
-    tileMapM TT.RoadCrossing   = T.roadCrossing tTil
-    tileMapM TT.Grass          = T.grass tTil
-    tileMapM TT.GreenTree1     = T.greenTree1 tObj
-    tileMapM TT.GreenTree2     = T.greenTree2 tObj
-    tileMapM TT.GreenTree3     = T.greenTree3 tObj
-    tileMapM TT.GreenTree4     = T.greenTree4 tObj
-    tileMapM TT.BrownTree1     = T.brownTree1 tObj
-    tileMapM TT.BrownTree2     = T.brownTree2 tObj
-    tileMapM TT.BrownTree3     = T.brownTree3 tObj
-    tileMapM TT.BrownTree4     = T.brownTree4 tObj
-    tileMapM TT.Rock1          = T.rock1 tObj
-    tileMapM TT.Rock2          = T.rock2 tObj
-    tileMapM TT.Rock3          = T.rock3 tObj
-    tileMapM TT.Rock4          = T.rock4 tObj
-    tileMapM TT.Bush1          = T.bush1 tObj
-    tileMapM TT.Bush2          = T.bush2 tObj
-    tileMapM TT.Water          = T.fullWave1 tWtr
-
-    grassBg = grassBackground
-    terrainPic = drawTerraineWithMap tileMapM grid
+draw time Map{tiles} = pictures $ map (S.draw time) tiles
     
+update :: Float -> Map -> Map
+update time lmap@Map{tiles} = lmap { tiles = map (S.update time) tiles }

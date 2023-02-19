@@ -115,6 +115,7 @@ main = do
      , \_ world -> world 
         { sprites = HM.map (S.update $ time world) $ sprites world
         , enemyManager = E.update (time world) (enemyManager world)
+        , gmap = M.update (time world) (gmap world)
         }
     
     ]
