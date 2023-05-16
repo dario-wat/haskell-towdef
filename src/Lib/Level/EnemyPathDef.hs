@@ -18,6 +18,9 @@ import qualified Lib.Level.PathSegment as S
 import qualified Lib.Level.Point as P
 import qualified Lib.Level.TileType as TT
 
+-- | This module is responsible for generating random enemy paths. This is
+-- the path marked by roads in the UI.
+
 intermediatePointRange :: (Int, Int)
 intermediatePointRange = (3, 5)
 
@@ -42,15 +45,12 @@ isValidPath :: P.Path -> Bool
 isValidPath []   = False
 isValidPath [_]  = False
 isValidPath path = 
-  hasNoOverlap path
+  (not . P.hasOverlap) path
   && inRange pathLengthRange (P.pathLength path)
   && inRange crossingCountRange (P.crossingCount path)
   && (not . any S.isEdge) (P.pathSegments path)
   && P.quadrantCount path >= 3
-  && hasNoAdjacentSegments path
-  where
-    hasNoOverlap = not . P.hasOverlap
-    hasNoAdjacentSegments = not . P.hasAdjacentSegment
+  && (not . P.hasAdjacentSegment) path
     
 -- | Generates a single random path that satisfies all validity requirements.
 genRandomPath :: IO P.Path
@@ -70,13 +70,16 @@ addPathToGrid grid path = G.Grid $ G.unGrid grid // pathIndices // turnIndices /
       | x1 == x2  = [((x1, y), TT.RoadVertical)   | y <- [min y1 y2 .. max y1 y2]]
       | y1 == y2  = [((x, y1), TT.RoadHorizontal) | x <- [min x1 x2 .. max x1 x2]]
       | otherwise = error "markGridRoads: impossible"
-    turnIndices = mapMaybe roadType $ P.allSegmentPairs path
+
+    turnIndices = mapMaybe turnType $ P.allSegmentPairs path
+    turnType = (second cornerTypeToTileType <$>) . uncurry S.cornerType
     crossingIndices = 
       map (,TT.RoadCrossing) $ mapMaybe (uncurry S.crossing) $ P.allSegmentPairs path
-    roadType = (second cornerTypeToTileType <$>) . uncurry S.cornerType
-    cornerTypeToTileType S.TopLeft = TT.RoadUpRight
-    cornerTypeToTileType S.TopRight = TT.RoadUpLeft
-    cornerTypeToTileType S.BottomLeft = TT.RoadDownRight
+
+    cornerTypeToTileType :: S.CornerType -> TT.TileType
+    cornerTypeToTileType S.TopLeft     = TT.RoadUpRight
+    cornerTypeToTileType S.TopRight    = TT.RoadUpLeft
+    cornerTypeToTileType S.BottomLeft  = TT.RoadDownRight
     cornerTypeToTileType S.BottomRight = TT.RoadDownLeft
 
 -- | Generates two random points on the edges of the grid, excluding corners

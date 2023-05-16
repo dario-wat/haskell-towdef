@@ -42,6 +42,7 @@ library
       Lib.Level.PathSegment
       Lib.Level.Point
       Lib.Level.TileType
+      Lib.Level.WaterPathDef
       Lib.Spritesheet
       Lib.Util
       Lib.Window
