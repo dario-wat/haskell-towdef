@@ -14,3 +14,4 @@
 - Different speeds and HP for enemies
 - Path crossings are still buggy sometimes
 - Make terraine tiles into sprites
+- WaterPathDef is WIP
